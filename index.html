@@ -186,6 +186,7 @@
             padding: 8px 15px;
             border-radius: 8px;
             backdrop-filter: blur(4px);
+            pointer-events: auto;
         }
         .hud-btn {
             pointer-events: auto;
@@ -194,6 +195,7 @@
             -webkit-user-select: none;
             cursor: pointer;
             transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
         }
         .hud-btn:active {
             transform: scale(0.92);
@@ -266,10 +268,10 @@
                 <div class="font-bold text-sm text-yellow-400">SKOR: <span id="hud-score">0</span></div>
                 <div class="text-xs text-gray-300 mt-1">Soal: <span id="hud-qcount">0</span>/10</div>
                 <div class="flex justify-end gap-2 mt-2">
-                    <button id="btn-music-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg border border-slate-500 shadow-md flex items-center justify-center gap-1 min-w-[70px]">
+                    <button id="btn-music-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-lg border border-slate-500 shadow-md flex items-center justify-center gap-1.5 min-w-[80px] active:scale-95">
                         🎵 <span id="hud-music-text">OFF</span>
                     </button>
-                    <button id="btn-pause-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg border border-slate-500 shadow-md">
+                    <button id="btn-pause-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3.5 py-2 rounded-lg border border-slate-500 shadow-md active:scale-95">
                         PAUSE
                     </button>
                 </div>
@@ -1299,8 +1301,29 @@
             }
         }
 
-        document.getElementById('btn-music').addEventListener('click', toggleMusic);
-        document.getElementById('btn-music-hud').addEventListener('click', toggleMusic);
+        // Fungsi khusus pengikat tombol musik agar responsif pada Layar Sentuh (HP) & Mouse (Desktop)
+        function bindMusicButton(buttonId) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+
+            let isTouched = false;
+
+            btn.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+                isTouched = true;
+                toggleMusic();
+                setTimeout(() => { isTouched = false; }, 300);
+            }, { passive: false });
+
+            btn.addEventListener('click', (e) => {
+                if (isTouched) return; // Hindari eksekusi ganda jika sudah dipicu oleh touchstart
+                toggleMusic();
+            });
+        }
+
+        bindMusicButton('btn-music');
+        bindMusicButton('btn-music-hud');
 
         // Keyboard Inputs
         window.addEventListener('keydown', (e) => {
