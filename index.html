@@ -135,33 +135,41 @@
         /* Virtual Controls */
         .controls-container {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 40px;
             pointer-events: none;
             z-index: 40;
         }
-        @media (min-width: 768px) { .controls-container { display: none; } } /* Hide on larger screens */
+        /* Sembunyikan kontrol virtual hanya jika perangkat menggunakan mouse (desktop) */
+        @media (hover: hover) and (pointer: fine) { 
+            .controls-container { display: none !important; } 
+        }
         
         .ctrl-btn {
-            width: 70px;
-            height: 70px;
-            background: rgba(59, 130, 246, 0.3);
-            border: 2px solid rgba(96, 165, 250, 0.5);
+            width: 75px;
+            height: 75px;
+            background: rgba(59, 130, 246, 0.4);
+            border: 3px solid rgba(96, 165, 250, 0.6);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.9);
             pointer-events: auto;
             backdrop-filter: blur(4px);
+            user-select: none;
+            -webkit-user-select: none;
         }
-        .ctrl-btn:active { background: rgba(59, 130, 246, 0.6); }
-        .ctrl-group { display: flex; gap: 15px; }
-        .ctrl-action { border-radius: 15px; width: 80px; }
+        .ctrl-btn:active { 
+            background: rgba(59, 130, 246, 0.8); 
+            transform: scale(0.95); 
+        }
+        .ctrl-group { display: flex; gap: 20px; }
+        .ctrl-action { border-radius: 20px; width: 100px; font-weight: bold; font-size: 18px; }
 
         /* HUD */
         #hud {
@@ -1278,18 +1286,29 @@
         });
 
         // Touch Controls
-        const btnLeft = document.getElementById('btn-left');
-        const btnRight = document.getElementById('btn-right');
-        const btnShoot = document.getElementById('btn-shoot');
+        function bindVirtualButton(btnId, keyName) {
+            const btn = document.getElementById(btnId);
+            if(!btn) return;
+            const press = (e) => { 
+                if(e.cancelable) e.preventDefault(); 
+                keys[keyName] = true; 
+            };
+            const release = (e) => { 
+                if(e.cancelable) e.preventDefault(); 
+                keys[keyName] = false; 
+            };
+            
+            // Mengakomodasi sentuhan HP dan klik mouse agar lebih responsif
+            btn.addEventListener('touchstart', press, {passive: false});
+            btn.addEventListener('touchend', release, {passive: false});
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup', release);
+            btn.addEventListener('mouseleave', release);
+        }
 
-        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualLeft = true; }, {passive: false});
-        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualLeft = false; }, {passive: false});
-        
-        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualRight = true; }, {passive: false});
-        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualRight = false; }, {passive: false});
-
-        btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualShoot = true; }, {passive: false});
-        btnShoot.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualShoot = false; }, {passive: false});
+        bindVirtualButton('btn-left', 'VirtualLeft');
+        bindVirtualButton('btn-right', 'VirtualRight');
+        bindVirtualButton('btn-shoot', 'VirtualShoot');
 
         // Init
         window.addEventListener('resize', resizeCanvas);
