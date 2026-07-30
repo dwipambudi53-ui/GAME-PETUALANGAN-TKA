@@ -187,6 +187,17 @@
             border-radius: 8px;
             backdrop-filter: blur(4px);
         }
+        .hud-btn {
+            pointer-events: auto;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .hud-btn:active {
+            transform: scale(0.92);
+        }
         .hp-bar-bg { width: 150px; height: 15px; background: #334155; border-radius: 10px; margin-top: 5px; overflow: hidden; }
         .hp-bar-fill { width: 100%; height: 100%; background: #22c55e; transition: width 0.3s; }
 
@@ -255,8 +266,12 @@
                 <div class="font-bold text-sm text-yellow-400">SKOR: <span id="hud-score">0</span></div>
                 <div class="text-xs text-gray-300 mt-1">Soal: <span id="hud-qcount">0</span>/10</div>
                 <div class="flex justify-end gap-2 mt-2">
-                    <button id="btn-music-hud" class="text-xs bg-slate-700 px-2 py-1 rounded border border-slate-500">🎵 OFF</button>
-                    <button id="btn-pause-hud" class="text-xs bg-slate-700 px-2 py-1 rounded border border-slate-500">PAUSE (ESC)</button>
+                    <button id="btn-music-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg border border-slate-500 shadow-md flex items-center justify-center gap-1 min-w-[70px]">
+                        🎵 <span id="hud-music-text">OFF</span>
+                    </button>
+                    <button id="btn-pause-hud" class="hud-btn text-xs sm:text-sm bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded-lg border border-slate-500 shadow-md">
+                        PAUSE
+                    </button>
                 </div>
             </div>
         </div>
@@ -1257,9 +1272,24 @@
         function toggleMusic() {
             musicEnabled = !musicEnabled;
             
-            // Update teks pada kedua tombol (di menu utama dan di HUD)
-            document.getElementById('btn-music').innerText = musicEnabled ? '🎵 MUSIK: ON' : '🎵 MUSIK: OFF';
-            document.getElementById('btn-music-hud').innerText = musicEnabled ? '🎵 ON' : '🎵 OFF';
+            const musicBtnMain = document.getElementById('btn-music');
+            const musicBtnHud = document.getElementById('btn-music-hud');
+            const hudMusicText = document.getElementById('hud-music-text');
+            
+            if (musicBtnMain) {
+                musicBtnMain.innerText = musicEnabled ? '🎵 MUSIK: ON' : '🎵 MUSIK: OFF';
+            }
+            
+            if (musicBtnHud) {
+                if (hudMusicText) hudMusicText.innerText = musicEnabled ? 'ON' : 'OFF';
+                if (musicEnabled) {
+                    musicBtnHud.classList.remove('bg-slate-700', 'border-slate-500');
+                    musicBtnHud.classList.add('bg-emerald-600', 'border-emerald-400', 'text-white', 'shadow-emerald-500/50');
+                } else {
+                    musicBtnHud.classList.remove('bg-emerald-600', 'border-emerald-400', 'shadow-emerald-500/50');
+                    musicBtnHud.classList.add('bg-slate-700', 'border-slate-500');
+                }
+            }
             
             if(musicEnabled) {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
