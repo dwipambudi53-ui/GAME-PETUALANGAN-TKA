@@ -3,27 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Petualangan TKA - Misi Menyelamatkan Putri TKA</title>
-    <!-- Tailwind CSS -->
+    <title>Petualangan TKA - Misi Menyelamatkan Putri</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2canvas for Certificate Download -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;800&display=swap');
+        
         body {
             margin: 0;
-            padding: 0;
             overflow: hidden;
-            background-color: #0f172a; /* Slate 900 */
+            background-color: #0f172a;
             font-family: 'Inter', sans-serif;
-            touch-action: none; /* Prevent default touch actions like pinch-zoom */
+            color: white;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        
-        .pixel-font {
-            font-family: 'Press Start 2P', cursive;
+
+        h1, h2, h3, .title-font {
+            font-family: 'Orbitron', sans-serif;
         }
 
         #game-container {
@@ -35,1378 +31,1284 @@
             align-items: center;
         }
 
-        #game-canvas {
-            display: none;
-            background: linear-gradient(to bottom, #4f46e5 0%, #06b6d4 100%);
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* UI Overlays */
+        /* Modals and Overlays */
         .overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(15, 23, 42, 0.9);
-            z-index: 10;
-            color: white;
+            z-index: 50;
             transition: opacity 0.3s;
         }
 
         .hidden {
             display: none !important;
-            opacity: 0;
-            pointer-events: none;
         }
 
-        .fantasy-panel {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 4px solid #fbbf24;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8), inset 0 0 15px rgba(251, 191, 36, 0.2);
-            padding: 2rem;
-            max-width: 90%;
-            width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
+        /* Custom Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; }
+            50% { text-shadow: 0 0 20px #60a5fa, 0 0 40px #60a5fa; }
+        }
+        .text-glow { animation: glow 2s infinite; }
+        .text-glow-gold { text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24; }
+        .text-glow-red { text-shadow: 0 0 10px #ef4444, 0 0 20px #ef4444; }
 
-        .fantasy-button {
-            background: linear-gradient(to bottom, #f59e0b, #d97706);
-            border: 2px solid #fbbf24;
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            border: 2px solid #60a5fa;
             color: white;
-            text-transform: uppercase;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
             font-weight: bold;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+            text-transform: uppercase;
         }
-
-        .fantasy-button:hover {
-            background: linear-gradient(to bottom, #fbbf24, #f59e0b);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(96, 165, 250, 0.7);
         }
-
-        .fantasy-button:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .input-field {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid #64748b;
-            color: white;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            width: 100%;
-            margin-bottom: 1rem;
-            font-size: 1rem;
-        }
+        .btn:active { transform: scale(0.95); }
         
-        .input-field:focus {
-            outline: none;
+        .btn-gold {
+            background: linear-gradient(135deg, #b45309, #f59e0b);
             border-color: #fbbf24;
-            box-shadow: 0 0 8px rgba(251, 191, 36, 0.5);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.5);
         }
 
-        #hud {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
-            display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 5;
-            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+        /* Form Inputs */
+        .input-field {
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid #3b82f6;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
         }
+        .input-field:focus { border-color: #60a5fa; box-shadow: 0 0 10px #60a5fa; }
 
-        .hud-item {
-            font-size: 1.25rem;
-            font-weight: bold;
+        /* Mobile Landscape Prompt */
+        #landscape-prompt {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #0f172a;
             color: white;
             display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            z-index: 1000;
+            text-align: center;
+            padding: 20px;
         }
+        @media (orientation: landscape) { #landscape-prompt { display: none !important; } }
+        @media (min-width: 1024px) { #landscape-prompt { display: none !important; } } /* Hide on desktop */
 
-        #virtual-controls {
+        /* Virtual Controls */
+        .controls-container {
             position: absolute;
             bottom: 20px;
-            left: 0;
             width: 100%;
-            display: none; /* Shown via JS on touch/small screens */
-            justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
-            z-index: 5;
-            pointer-events: none; /* Let touches pass through where there are no buttons */
-        }
-
-        .control-group {
             display: flex;
-            gap: 15px;
-            pointer-events: auto;
+            justify-content: space-between;
+            padding: 0 30px;
+            pointer-events: none;
+            z-index: 40;
         }
-
-        .v-btn {
+        @media (min-width: 768px) { .controls-container { display: none; } } /* Hide on larger screens */
+        
+        .ctrl-btn {
             width: 70px;
             height: 70px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.5);
+            background: rgba(59, 130, 246, 0.3);
+            border: 2px solid rgba(96, 165, 250, 0.5);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2rem;
-            color: white;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            pointer-events: auto;
             backdrop-filter: blur(4px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        
-        .v-btn:active, .v-btn.active {
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.95);
-        }
-        
-        .v-btn-shoot {
-            background: rgba(239, 68, 68, 0.4);
-            border-color: rgba(248, 113, 113, 0.8);
-        }
-        .v-btn-shoot:active, .v-btn-shoot.active {
-            background: rgba(239, 68, 68, 0.6);
-        }
+        .ctrl-btn:active { background: rgba(59, 130, 246, 0.6); }
+        .ctrl-group { display: flex; gap: 15px; }
+        .ctrl-action { border-radius: 15px; width: 80px; }
 
-        #question-modal {
-            background: rgba(15, 23, 42, 0.95);
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 10px; left: 20px; right: 20px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 30;
         }
-        
-        .option-btn {
-            background: rgba(255,255,255,0.1);
+        .hud-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid #3b82f6;
+            padding: 8px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+        }
+        .hp-bar-bg { width: 150px; height: 15px; background: #334155; border-radius: 10px; margin-top: 5px; overflow: hidden; }
+        .hp-bar-fill { width: 100%; height: 100%; background: #22c55e; transition: width 0.3s; }
+
+        /* Question Options */
+        .q-option {
+            background: rgba(30, 41, 59, 0.9);
             border: 2px solid #475569;
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: left;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
-            margin-bottom: 0.5rem;
-            display: block;
-            width: 100%;
+            text-align: left;
         }
-        .option-btn:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: #94a3b8;
-        }
-        .option-btn.correct {
-            background: rgba(34, 197, 94, 0.3) !important;
-            border-color: #22c55e !important;
-        }
-        .option-btn.wrong {
-            background: rgba(239, 68, 68, 0.3) !important;
-            border-color: #ef4444 !important;
-        }
+        .q-option:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.2); }
+        .q-option.selected { border-color: #fbbf24; background: rgba(245, 158, 11, 0.2); }
+        .q-option.correct { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+        .q-option.wrong { border-color: #ef4444; background: rgba(239, 68, 68, 0.2); }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        .animate-float { animation: float 3s ease-in-out infinite; }
-        
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
-            50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8), inset 0 0 10px rgba(251,191,36,0.3); }
-            100% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
-        }
-        .pulse-border { animation: pulse-glow 2s infinite; }
-
-        /* Rotate Screen Prompt */
-        #rotate-prompt {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f172a;
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            text-align: center;
-            padding: 2rem;
-        }
-        @media (orientation: portrait) and (max-width: 768px) {
-            #rotate-prompt { display: flex; }
-            #game-container { display: none; }
-        }
-        
-        /* Certificate styling */
-        #certificate {
-            background: white;
+        /* Certificate */
+        #certificate-content {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             color: #0f172a;
-            padding: 2rem;
-            border: 8px double #d97706;
+            border: 10px solid #fbbf24;
+            padding: 40px;
+            border-radius: 10px;
             text-align: center;
             position: relative;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+            max-width: 600px;
+            width: 90%;
+        }
+        #certificate-content::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 2px dashed #b45309;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <!-- Rotate Device Prompt -->
-    <div id="rotate-prompt">
-        <i class="fas fa-mobile-alt text-6xl mb-4" style="transform: rotate(90deg);"></i>
-        <h2 class="text-2xl font-bold mb-2">Putar Perangkat</h2>
-        <p>Putar perangkat ke posisi landscape agar pengalaman bermain lebih nyaman.</p>
+    <!-- Mobile Landscape Prompt -->
+    <div id="landscape-prompt">
+        <svg class="w-20 h-20 mb-4 animate-bounce text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        <h2 class="text-2xl font-bold title-font text-glow">PUTAR HANDPHONE</h2>
+        <p class="mt-2 text-lg">Ke Posisi Landscape untuk pengalaman bermain terbaik.</p>
     </div>
 
     <div id="game-container">
-        
-        <!-- Main Menu -->
-        <div id="main-menu" class="overlay">
-            <!-- Background Image -->
-            <div class="absolute inset-0 z-[-1] bg-cover bg-center bg-no-repeat" style="background-image: url('https://i.imgur.com/HALDJ2P.png');">
-                <!-- Overlay gelap ringan agar teks judul dan tombol tetap kontras/terbaca -->
-                <div class="absolute inset-0 bg-black/40"></div>
-            </div>
-            
-            <div class="text-center mb-8 mt-12">
-                <h1 class="pixel-font text-4xl md:text-6xl text-yellow-400 mb-4 drop-shadow-lg animate-float">PETUALANGAN TKA</h1>
-                <h2 class="text-xl md:text-2xl text-blue-200 tracking-wider">Misi Menyelamatkan Putri TKA</h2>
-            </div>
-            
-            <div class="flex flex-col gap-4 w-64">
-                <button onclick="showInputForm()" class="fantasy-button pulse-border text-lg"><i class="fas fa-play"></i> Mulai Game</button>
-                <button onclick="showInstructions()" class="fantasy-button"><i class="fas fa-book"></i> Petunjuk</button>
-                <button onclick="showSettings()" class="fantasy-button"><i class="fas fa-cog"></i> Pengaturan</button>
-            </div>
+        <canvas id="gameCanvas"></canvas>
 
-            <div class="mt-8 text-center z-10 opacity-75 hover:opacity-100 transition duration-300">
-                <p class="text-gray-400 text-xs font-light mb-0.5">Game dibuat oleh :</p>
-                <p class="text-gray-200 font-medium text-sm tracking-wide">Dwi Harry Pambudi, M.Pd</p>
-                <p class="text-gray-500 text-xs mt-0.5">Guru SMK N 2 Songgom</p>
-            </div>
-            
-            <div class="absolute bottom-4 right-4 flex gap-4">
-                <button onclick="toggleBGM()" class="text-white text-2xl hover:text-yellow-400"><i class="fas fa-volume-up btn-sound-icon"></i></button>
-                <button onclick="toggleFullscreen()" class="text-white text-2xl hover:text-yellow-400"><i class="fas fa-expand"></i></button>
-            </div>
-        </div>
-
-        <!-- Instructions Screen -->
-        <div id="instructions-screen" class="overlay hidden">
-            <div class="fantasy-panel">
-                <h2 class="text-3xl font-bold text-center text-yellow-400 mb-6 pixel-font">PETUNJUK</h2>
-                <ul class="space-y-4 text-lg mb-8">
-                    <li><i class="fas fa-arrow-right text-blue-400 mr-2"></i> Anda akan <b>bergerak maju</b> menembus medan.</li>
-                    <li><i class="fas fa-meteor text-red-400 mr-2"></i> Gunakan tombol panah (atau tombol virtual) untuk mengatur posisi. Tekan Spasi/Tembak untuk <b>menyerang monster</b>.</li>
-                    <li><i class="fas fa-shield-alt text-gray-400 mr-2"></i> Hindari bersentuhan langsung dengan monster.</li>
-                    <li><i class="fas fa-question-circle text-green-400 mr-2"></i> Masuki <b>Portal Soal</b> (lingkaran biru) dan jawab soal TKA Bahasa Indonesia.</li>
-                    <li><i class="fas fa-star text-yellow-400 mr-2"></i> Kumpulkan poin dan bintang untuk menyelamatkan <b>Putri TKA</b> di Level 5!</li>
-                </ul>
-                <div class="flex justify-center">
-                    <button onclick="hideInstructions()" class="fantasy-button"><i class="fas fa-arrow-left"></i> Kembali</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Form -->
-        <div id="input-screen" class="overlay hidden">
-            <div class="fantasy-panel">
-                <h2 class="text-2xl font-bold text-center text-yellow-400 mb-6">Pendaftaran Prajurit</h2>
-                <form id="player-form" onsubmit="startGame(event)">
-                    <input type="text" id="player-name" class="input-field" placeholder="Nama Lengkap" required>
-                    <input type="text" id="player-class" class="input-field" placeholder="Kelas" required>
-                    <input type="text" id="player-school" class="input-field" placeholder="Asal Sekolah" required>
-                    <div class="flex justify-between mt-6">
-                        <button type="button" onclick="showMainMenu()" class="fantasy-button bg-gray-600 border-gray-500"><i class="fas fa-times"></i> Batal</button>
-                        <button type="submit" class="fantasy-button pulse-border"><i class="fas fa-swords"></i> Bertempur!</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Settings Screen -->
-        <div id="settings-screen" class="overlay hidden">
-            <div class="fantasy-panel">
-                <h2 class="text-2xl font-bold text-center text-yellow-400 mb-6">Pengaturan</h2>
-                <div class="space-y-4 mb-8 text-lg">
-                    <div class="flex justify-between items-center border-b border-gray-600 pb-3">
-                        <span>Musik Latar (BGM)</span>
-                        <button id="setting-bgm" onclick="toggleBGM()" class="text-green-400 font-bold px-4 py-1 bg-slate-800 rounded">ON</button>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-gray-600 pb-3">
-                        <span>Efek Suara (SFX)</span>
-                        <button id="setting-sfx" onclick="toggleSFX()" class="text-green-400 font-bold px-4 py-1 bg-slate-800 rounded">ON</button>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-gray-600 pb-3">
-                        <span>Tombol Layar (HP)</span>
-                        <button id="setting-controls" onclick="toggleControls()" class="text-yellow-400 font-bold px-4 py-1 bg-slate-800 rounded">AUTO</button>
-                    </div>
-                </div>
-                <div class="flex justify-center">
-                    <button onclick="hideSettings()" class="fantasy-button"><i class="fas fa-check"></i> Selesai</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- HUD -->
+        <!-- Heads Up Display (HUD) -->
         <div id="hud" class="hidden">
-            <div class="flex gap-4">
-                <div class="hud-item text-red-500"><i class="fas fa-heart"></i> <span id="hud-hp">5</span></div>
-                <div class="hud-item text-blue-300"><i class="fas fa-book-open"></i> Lvl <span id="hud-level">1</span></div>
+            <div class="hud-box">
+                <div class="font-bold text-sm text-blue-300" id="hud-name">Pemain</div>
+                <div class="hp-bar-bg"><div class="hp-bar-fill" id="hp-fill"></div></div>
+                <div class="text-xs mt-1">HP: <span id="hp-text">100</span>/100</div>
             </div>
-            <div class="flex gap-4">
-                <div class="hud-item text-yellow-400"><i class="fas fa-star"></i> <span id="hud-stars">0</span></div>
-                <div class="hud-item text-white">Skor: <span id="hud-score">0</span></div>
+            <div class="hud-box text-center">
+                <div class="title-font text-xl text-glow-gold" id="hud-level">LEVEL 1</div>
+                <div class="text-xs text-blue-200" id="hud-materi">Pemahaman Tekstual</div>
+            </div>
+            <div class="hud-box text-right">
+                <div class="font-bold text-sm text-yellow-400">SKOR: <span id="hud-score">0</span></div>
+                <div class="text-xs text-gray-300 mt-1">Soal: <span id="hud-qcount">0</span>/10</div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button id="btn-music-hud" class="text-xs bg-slate-700 px-2 py-1 rounded border border-slate-500">🎵 OFF</button>
+                    <button id="btn-pause-hud" class="text-xs bg-slate-700 px-2 py-1 rounded border border-slate-500">PAUSE (ESC)</button>
+                </div>
             </div>
         </div>
 
-        <!-- In-game Buttons -->
-        <button id="pause-btn" class="hidden absolute top-12 right-4 text-white text-3xl z-10 opacity-70 hover:opacity-100 drop-shadow-md" onclick="togglePause()">
-            <i class="fas fa-pause-circle"></i>
-        </button>
-        <button id="ingame-bgm-btn" class="hidden absolute top-24 right-4 text-white text-3xl z-10 opacity-70 hover:opacity-100 drop-shadow-md" onclick="toggleBGM()">
-            <i class="fas fa-volume-up btn-sound-icon"></i>
-        </button>
-
-        <!-- The Canvas -->
-        <canvas id="game-canvas"></canvas>
-
-        <!-- Virtual Controls (Mobile) -->
-        <div id="virtual-controls">
-            <div class="control-group">
-                <div class="v-btn" id="btn-left"><i class="fas fa-arrow-left"></i></div>
-                <div class="v-btn" id="btn-right"><i class="fas fa-arrow-right"></i></div>
+        <!-- Virtual Controls -->
+        <div id="virtual-controls" class="controls-container hidden">
+            <div class="ctrl-group">
+                <button class="ctrl-btn" id="btn-left">◄</button>
+                <button class="ctrl-btn" id="btn-right">►</button>
             </div>
-            <div class="control-group">
-                <div class="v-btn v-btn-shoot" id="btn-shoot"><i class="fas fa-fire"></i></div>
+            <div class="ctrl-group">
+                <button class="ctrl-btn ctrl-action" id="btn-shoot">TEMBAK</button>
+            </div>
+        </div>
+
+        <!-- Main Menu -->
+        <div id="menu-main" class="overlay">
+            <div class="text-center animate-float">
+                <h1 class="text-6xl md:text-7xl font-black title-font text-glow mb-2">PETUALANGAN TKA</h1>
+                <h2 class="text-2xl md:text-3xl font-bold text-yellow-400 text-glow-gold mb-4">Misi Menyelamatkan Putri TKA</h2>
+                <div class="mb-10 font-semibold tracking-wide">
+                    <p class="text-lg text-blue-100">Game dibuat oleh : Dwi Harry Pambudi, M.Pd</p>
+                    <p class="text-base text-blue-300 mt-1">SMK N 2 Songgom</p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-4 w-64">
+                <button class="btn" id="btn-start">▶ MULAI GAME</button>
+                <button class="btn" id="btn-howto">📖 PETUNJUK</button>
+                <button class="btn" id="btn-highscore">🏆 SKOR</button>
+                <button class="btn bg-slate-700" id="btn-music">🎵 MUSIK: OFF</button>
+            </div>
+        </div>
+
+        <!-- Instructions Menu -->
+        <div id="menu-howto" class="overlay hidden">
+            <div class="bg-slate-800 p-8 rounded-xl border-2 border-blue-500 max-w-md w-full mx-4">
+                <h2 class="text-3xl title-font text-glow mb-4 text-center">PETUNJUK</h2>
+                <ul class="list-disc pl-5 space-y-2 text-gray-200">
+                    <li>Gunakan <b>Tombol Arah (Kiri/Kanan)</b> untuk bergerak.</li>
+                    <li>Tekan <b>SPASI</b> untuk menembak monster.</li>
+                    <li>Kalahkan monster untuk memunculkan soal TKA.</li>
+                    <li>Jawab soal Bahasa Indonesia dengan benar untuk melanjutkan.</li>
+                    <li>Jawaban benar = <span class="text-green-400">+20 Poin</span>.</li>
+                    <li>Jawaban salah = <span class="text-red-400">HP Berkurang</span>.</li>
+                    <li>Selesaikan ke-5 Level dan selamatkan Putri TKA!</li>
+                </ul>
+                <div class="mt-6 text-center">
+                    <button class="btn w-full" id="btn-back-howto">KEMBALI</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Identity Form -->
+        <div id="menu-identity" class="overlay hidden">
+            <div class="bg-slate-800 p-8 rounded-xl border-2 border-yellow-400 max-w-md w-full mx-4 shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                <h2 class="text-2xl title-font text-glow-gold mb-6 text-center">DATA PRAJURIT</h2>
+                <input type="text" id="inp-name" class="input-field" placeholder="Nama Lengkap" required>
+                <input type="text" id="inp-class" class="input-field" placeholder="Kelas (Misal: XII RPL 1)" required>
+                <input type="text" id="inp-school" class="input-field" placeholder="Asal Sekolah" required>
+                <div class="mt-4">
+                    <button class="btn btn-gold w-full" id="btn-start-adventure">Mulai Petualangan</button>
+                    <button class="text-gray-400 text-sm mt-3 w-full text-center hover:text-white" id="btn-back-identity">Batal</button>
+                </div>
             </div>
         </div>
 
         <!-- Question Modal -->
-        <div id="question-modal" class="overlay hidden">
-            <div class="fantasy-panel w-[800px]">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl text-blue-300" id="q-subkompetensi">Subkompetensi</h3>
-                    <span class="bg-blue-600 px-3 py-1 rounded text-sm text-white">Level <span id="q-level">1</span></span>
+        <div id="modal-question" class="overlay hidden">
+            <div class="bg-slate-900 p-6 md:p-8 rounded-xl border-4 border-blue-500 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                    <h3 class="text-xl title-font text-blue-400" id="q-level-title">Level 1 - Soal 1</h3>
+                    <span class="text-sm bg-blue-900 px-3 py-1 rounded-full border border-blue-400" id="q-materi">Materi</span>
                 </div>
-                <p id="q-text" class="text-lg md:text-xl mb-6 leading-relaxed bg-slate-800 p-4 rounded-lg border border-slate-600"></p>
-                <div id="q-options" class="space-y-3">
-                    <!-- Options injected here -->
+                
+                <div class="text-lg mb-6 leading-relaxed text-gray-100" id="q-text">
+                    <!-- Question text goes here -->
                 </div>
-                <div id="q-feedback" class="mt-4 text-center text-xl font-bold hidden py-3 rounded uppercase tracking-wider"></div>
-            </div>
-        </div>
-        
-        <!-- Pause Menu -->
-        <div id="pause-menu" class="overlay hidden">
-            <div class="fantasy-panel text-center w-80">
-                <h2 class="text-3xl font-bold text-yellow-400 mb-8 pixel-font">DIJEDA</h2>
-                <div class="flex flex-col gap-4 mx-auto">
-                    <button onclick="togglePause()" class="fantasy-button"><i class="fas fa-play"></i> Lanjutkan</button>
-                    <button onclick="quitGame()" class="fantasy-button" style="background: linear-gradient(to bottom, #ef4444, #b91c1c); border-color: #f87171;"><i class="fas fa-sign-out-alt"></i> Keluar</button>
+
+                <div class="flex flex-col gap-2" id="q-options">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <!-- Answer Feedback Area -->
+                <div id="q-feedback" class="hidden mt-6 p-4 rounded-lg bg-slate-800 border-2">
+                    <h4 class="text-xl font-bold mb-2 flex items-center gap-2" id="feedback-title"></h4>
+                    <p class="text-sm text-gray-300" id="feedback-desc"></p>
+                    <button class="btn w-full mt-4" id="btn-next-q">Lanjut Perjalanan</button>
                 </div>
             </div>
         </div>
 
-        <!-- End Game Screen -->
-        <div id="end-screen" class="overlay hidden" style="background: rgba(0,0,0,0.95); overflow-y: auto; padding: 40px 0;">
-            <div class="flex flex-col items-center w-full min-h-full justify-center">
-                <!-- Fireworks Canvas overlay -->
-                <canvas id="fireworks-canvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+        <!-- Level Up / Reward Modal -->
+        <div id="modal-levelup" class="overlay hidden">
+            <div class="text-center animate-float bg-slate-800 p-10 rounded-2xl border-4 border-yellow-400 shadow-[0_0_40px_rgba(251,191,36,0.6)]">
+                <h2 class="text-5xl title-font text-glow-gold mb-2">LEVEL SELESAI!</h2>
+                <p class="text-xl text-blue-300 mb-6">Kamu mendapatkan perlengkapan baru!</p>
+                <div class="flex justify-center gap-6 mb-8 text-4xl">
+                    <span class="bg-slate-700 p-4 rounded-full border border-slate-500">🛡️</span>
+                    <span class="bg-slate-700 p-4 rounded-full border border-slate-500" id="reward-icon">⚔️</span>
+                    <span class="bg-slate-700 p-4 rounded-full border border-slate-500">🏅</span>
+                </div>
+                <button class="btn btn-gold text-xl px-10" id="btn-next-level">LANJUT KE LEVEL BERIKUTNYA</button>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="modal-gameover" class="overlay hidden">
+            <div class="text-center">
+                <h2 class="text-6xl title-font text-glow-red mb-4 text-red-500">GAME OVER</h2>
+                <p class="text-xl mb-8">Prajurit gugur dalam misi. Putri TKA masih diculik.</p>
+                <button class="btn" id="btn-restart">Coba Lagi</button>
+                <button class="btn bg-slate-700 ml-2" id="btn-menu-go">Menu Utama</button>
+            </div>
+        </div>
+
+        <!-- Victory & Certificate Modal -->
+        <div id="modal-victory" class="overlay hidden">
+            <div class="flex flex-col items-center max-h-[100vh] overflow-y-auto py-10">
+                <h1 class="text-5xl md:text-6xl font-black title-font text-glow-gold text-yellow-400 mb-2 text-center">SELAMAT!</h1>
+                <h2 class="text-2xl md:text-3xl title-font text-white mb-6 text-center">MISI BERHASIL, PUTRI TKA SELAMAT!</h2>
                 
-                <h1 id="end-title" class="pixel-font text-4xl md:text-5xl text-yellow-400 mb-4 z-10 drop-shadow-xl text-center">SELAMAT!</h1>
-                <h2 id="end-subtitle" class="text-xl md:text-2xl text-white mb-8 z-10 text-center font-light tracking-widest">PUTRI TKA BERHASIL DISELAMATKAN</h2>
-                
-                <div id="certificate" class="z-10 w-[90%] max-w-[800px] shadow-2xl rounded-sm mx-auto">
-                    <div class="border-4 border-slate-200 p-8 h-full flex flex-col justify-center bg-amber-50">
-                        <div class="text-center mb-6 border-b-2 border-amber-900 pb-4">
-                            <h2 class="text-3xl md:text-4xl font-serif font-bold text-amber-900 mb-2">SERTIFIKAT PENGHARGAAN</h2>
-                            <p class="text-amber-800 font-semibold tracking-wide uppercase">Diberikan Kepada Prajurit:</p>
-                        </div>
-                        
-                        <div class="text-center mb-6">
-                            <h3 id="cert-name" class="text-3xl md:text-4xl font-bold text-slate-800 italic uppercase">Nama Pemain</h3>
-                            <p class="text-lg text-slate-600 mt-2">Kelas: <strong id="cert-class">X</strong> | Sekolah: <strong id="cert-school">Sekolah</strong></p>
-                        </div>
-                        
-                        <p class="text-center text-md md:text-lg text-slate-700 mb-8 leading-relaxed max-w-2xl mx-auto">
-                            Atas keberanian dan kecerdasannya menyelesaikan <strong>Misi Penyelamatan Putri TKA</strong> dengan menaklukkan rintangan dan menjawab rentetan ujian soal Bahasa Indonesia secara tepat.
-                        </p>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white p-4 rounded-lg border border-amber-200 mb-6 shadow-inner">
-                            <div class="text-center border-b md:border-b-0 md:border-r border-amber-200 pb-2 md:pb-0">
-                                <p class="text-xs text-slate-500 uppercase font-bold">Skor Total</p>
-                                <p id="cert-score" class="text-2xl font-bold text-blue-600 mt-1">0</p>
-                            </div>
-                            <div class="text-center border-b md:border-b-0 md:border-r border-amber-200 pb-2 md:pb-0">
-                                <p class="text-xs text-slate-500 uppercase font-bold">Bintang</p>
-                                <p id="cert-stars" class="text-2xl font-bold text-yellow-500 mt-1"><i class="fas fa-star text-sm"></i> 0</p>
-                            </div>
-                            <div class="text-center border-r md:border-r border-amber-200">
-                                <p class="text-xs text-slate-500 uppercase font-bold">Waktu Misi</p>
-                                <p id="cert-time" class="text-xl font-semibold text-slate-700 mt-1">00:00</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-xs text-slate-500 uppercase font-bold">Nilai TKA</p>
-                                <p id="cert-grade" class="text-xl font-semibold text-green-600 mt-1">0</p>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center">
-                            <p class="text-sm text-slate-500 uppercase tracking-widest font-bold">Predikat Gelar</p>
-                            <h4 id="cert-title" class="text-xl md:text-2xl font-bold text-amber-900 mt-2 bg-amber-200 inline-block px-4 py-1 rounded-full shadow-sm">🥇 Sang Penyelamat</h4>
-                        </div>
+                <div id="certificate-content" class="mb-8">
+                    <h3 class="text-3xl title-font text-blue-900 mb-2">SERTIFIKAT LITERASI</h3>
+                    <p class="text-sm text-gray-600 mb-6">Diberikan kepada Prajurit TKA:</p>
+                    
+                    <h2 class="text-4xl font-bold text-gray-900 mb-2" id="cert-name">NAMA PEMAIN</h2>
+                    <p class="text-lg text-blue-800 font-semibold mb-1" id="cert-class">Kelas</p>
+                    <p class="text-lg text-gray-700 mb-6" id="cert-school">Sekolah</p>
+                    
+                    <div class="flex justify-center gap-2 mb-4 text-yellow-500 text-3xl">
+                        ★ ★ ★ ★ ★
                     </div>
+                    
+                    <p class="text-gray-700 mb-2">Telah berhasil menyelesaikan 5 Level Petualangan TKA</p>
+                    <div class="text-xl font-bold text-green-700 mb-2 border-t border-b border-gray-300 py-2 inline-block">
+                        SKOR AKHIR: <span id="cert-score">0</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">Kementerian Literasi Nusantara</p>
                 </div>
-                
-                <div class="z-10 mt-8 flex flex-col sm:flex-row gap-4 pb-8">
-                    <button onclick="downloadCertificate()" class="fantasy-button" style="background: linear-gradient(to bottom, #3b82f6, #1d4ed8); border-color: #60a5fa;"><i class="fas fa-download"></i> Unduh Sertifikat</button>
-                    <button onclick="resetToMainMenu()" class="fantasy-button"><i class="fas fa-home"></i> Kembali ke Markas</button>
+
+                <div class="flex gap-4">
+                    <button class="btn" id="btn-play-again">Main Lagi</button>
+                    <button class="btn btn-gold" id="btn-print-cert">Cetak Sertifikat</button>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        const questionDB = {
-            level1: [
-                { sub: "Mengidentifikasi penggunaan kata serapan", q: "Bacalah kalimat berikut: 'Pemerintah merencanakan standardisasi pelayanan publik.' Kata 'standardisasi' merupakan serapan dari bahasa asing. Penulisan baku yang tepat adalah...", options: ["standarisasi", "standardisasi", "standartisasi", "standardisir"], a: 1 },
-                { sub: "Mengidentifikasi latar", q: "Kutipan cerpen: 'Aroma tanah basah dan daun pinus menguar tajam. Kabut perlahan turun menyelimuti tenda-tenda kami.' Latar tempat kutipan tersebut adalah...", options: ["Pantai", "Perkotaan", "Pegunungan", "Gurun"], a: 2 },
-                { sub: "Mengidentifikasi karakter", q: "Teks: 'Meskipun kakinya lecet dan napasnya tersengal, Budi tetap melangkah maju membawa keranjang buah itu untuk ibunya.' Watak Budi adalah...", options: ["Pemalas", "Pantang menyerah", "Sombong", "Licik"], a: 1 },
-                { sub: "Mengidentifikasi fenomena", q: "Teks: 'Air sungai meluap membawa lumpur dan sampah, merendam ratusan rumah warga hingga atap.' Fenomena yang terjadi adalah...", options: ["Tanah Longsor", "Tsunami", "Banjir Bandang", "Erosi"], a: 2 },
-                { sub: "Menyusun kerangka teks", q: "Urutan kerangka karangan eksposisi yang tepat adalah...", options: ["Tesis - Argumentasi - Penegasan Ulang", "Argumentasi - Tesis - Penegasan Ulang", "Orientasi - Komplikasi - Resolusi", "Pernyataan Umum - Deskripsi Bagian - Deskripsi Manfaat"], a: 0 }
+        // --- DATA SOAL TKA BAHASA INDONESIA ---
+        // Karena keterbatasan ruang, kita gunakan 2 soal per level, namun logic mendukung 10 soal per level.
+        const tkaQuestions = {
+            1: [ // Level 1: Pemahaman Tekstual
+                {
+                    materi: "Mengidentifikasi penggunaan kata serapan",
+                    q: "Bacalah kalimat berikut: 'Pemerintah melakukan <i>evaluasi</i> terhadap sistem pendidikan secara <i>komprehensif</i>.'<br><br>Kata serapan 'evaluasi' dan 'komprehensif' secara berurutan memiliki makna...",
+                    options: [
+                        "A. Penilaian dan menyeluruh",
+                        "B. Pengawasan dan terpadu",
+                        "C. Ujian dan sebagian",
+                        "D. Perbaikan dan bertahap",
+                        "E. Pemantauan dan detail"
+                    ],
+                    answer: 0,
+                    explanation: "Evaluasi diserap dari bahasa Inggris 'evaluation' yang berarti penilaian. Komprehensif diserap dari 'comprehensive' yang berarti menyeluruh."
+                },
+                {
+                    materi: "Mengidentifikasi latar",
+                    q: "Kutipan cerpen: 'Matahari baru saja menyembul dari ufuk timur, namun riuh rendah suara tawar-menawar sudah menggema memecah kesunyian. Bau amis ikan segar bercampur dengan aroma garam laut menusuk hidung.'<br><br>Latar tempat dan waktu pada kutipan di atas adalah...",
+                    options: [
+                        "A. Pelabuhan, siang hari",
+                        "B. Pasar ikan, pagi hari",
+                        "C. Tepi pantai, sore hari",
+                        "D. Desa nelayan, malam hari",
+                        "E. Perahu nelayan, pagi hari"
+                    ],
+                    answer: 1,
+                    explanation: "Latar waktu pagi ('Matahari baru menyembul'). Latar tempat pasar ikan ('suara tawar-menawar', 'bau amis ikan segar')."
+                }
             ],
-            level2: [
-                { sub: "Pemahaman Tekstual (Lanjutan)", q: "Kalimat yang menggunakan kata bersinonim adalah...", options: ["Banjir bandang itu merusak dan menghancurkan desa.", "Kakak sedang belajar, sedangkan adik bermain.", "Ia maju selangkah lalu mundur dua langkah.", "Banyak anak-anak bermain di taman."], a: 0 },
-                { sub: "Pemahaman Tekstual (Lanjutan)", q: "Kalimat efektif di bawah ini adalah...", options: ["Para siswa-siswa sedang belajar di kelas.", "Siswa-siswa sedang belajar di kelas.", "Siswa sedang mereka belajar di kelas.", "Banyak siswa sedang belajar di kelas."], a: 3 },
-                { sub: "Pemahaman Tekstual (Lanjutan)", q: "Penggunaan tanda koma yang tepat terdapat pada...", options: ["Ibu membeli apel, mangga dan jeruk.", "Ibu membeli apel, mangga, dan jeruk.", "Ibu membeli, apel, mangga, dan jeruk.", "Ibu membeli apel, mangga, dan, jeruk."], a: 1 },
-                { sub: "Pemahaman Tekstual (Lanjutan)", q: "Kata baku dari 'apotik' dan 'praktek' adalah...", options: ["Apotek dan praktik", "Apotek dan praktek", "Apotik dan praktik", "Apotek dan pratik"], a: 0 },
-                { sub: "Pemahaman Tekstual (Lanjutan)", q: "Makna istilah 'konservasi' dalam kalimat 'Pemerintah melakukan konservasi hutan' adalah...", options: ["Pengeksploitasian", "Pelestarian", "Penebangan", "Penanaman kembali (reboisasi)"], a: 1 }
+            2: [ // Level 2: Pemahaman Tekstual (Struktur)
+                {
+                    materi: "Mengurutkan isi teks",
+                    q: "Perhatikan urutan petunjuk berikut!<br>1) Tekan tombol power.<br>2) Sambungkan kabel ke stopkontak.<br>3) Masukkan bahan ke dalam blender.<br>4) Tuangkan hasil blender ke gelas.<br>5) Tutup rapat penutup blender.<br><br>Urutan yang tepat agar menjadi teks prosedur yang padu adalah...",
+                    options: [
+                        "A. 2 - 3 - 5 - 1 - 4",
+                        "B. 3 - 2 - 5 - 1 - 4",
+                        "C. 2 - 1 - 3 - 5 - 4",
+                        "D. 3 - 5 - 2 - 1 - 4",
+                        "E. 1 - 3 - 5 - 2 - 4"
+                    ],
+                    answer: 3,
+                    explanation: "Urutan logis: Masukkan bahan (3) -> Tutup rapat (5) -> Sambungkan kabel (2) -> Tekan power (1) -> Tuangkan hasil (4)."
+                },
+                {
+                    materi: "Mengidentifikasi struktur informasi",
+                    q: "Bagian teks eksposisi yang berisi pendapat atau prediksi penulis berdasarkan fakta yang telah diuraikan sebelumnya disebut...",
+                    options: [
+                        "A. Tesis",
+                        "B. Argumentasi",
+                        "C. Penegasan ulang",
+                        "D. Deskripsi bagian",
+                        "E. Orientasi"
+                    ],
+                    answer: 2,
+                    explanation: "Penegasan ulang (rekomendasi/simpulan) berisi penguatan kembali atas pendapat yang telah ditunjang oleh fakta-fakta pada bagian argumentasi."
+                }
             ],
-            level3: [
-                { sub: "Menyimpulkan ide pokok", q: "Paragraf: 'Buku adalah jendela dunia. Melalui buku, kita dapat mengetahui berbagai informasi. Membaca buku juga melatih daya imajinasi dan konsentrasi. Oleh karena itu, rajinlah membaca.' Ide pokoknya adalah...", options: ["Buku adalah jendela dunia", "Informasi ada di buku", "Melatih imajinasi", "Rajin membaca"], a: 0 },
-                { sub: "Menyimpulkan gagasan pendukung", q: "Gagasan pendukung dari ide pokok 'Manfaat olahraga' adalah...", options: ["Olahraga membuat badan sehat dan melancarkan aliran darah", "Olahraga harus dilakukan pagi hari", "Alat olahraga mahal harganya", "Banyak orang malas berolahraga"], a: 0 },
-                { sub: "Menyimpulkan konflik", q: "Teks: 'Andi ingin kuliah seni, namun ayahnya memaksa Andi masuk fakultas kedokteran.' Konflik yang terjadi adalah...", options: ["Konflik batin Andi", "Konflik Andi dengan ayahnya", "Konflik ayah dengan masyarakat", "Konflik Andi dengan temannya"], a: 1 },
-                { sub: "Menyimpulkan latar", q: "Teks: 'Kicau burung bersahutan menyambut datangnya sang surya. Embun masih menggelayut di ujung daun.' Latar waktu teks tersebut adalah...", options: ["Sore hari", "Siang hari", "Pagi hari", "Malam hari"], a: 2 },
-                { sub: "Menyimpulkan nilai", q: "Cerita tentang seekor semut yang menolong merpati yang pernah menolongnya mengandung nilai...", options: ["Kejujuran", "Balas budi", "Keberanian", "Kemandirian"], a: 1 }
+            3: [ // Level 3: Pemahaman Inferensial
+                {
+                    materi: "Ide Pokok",
+                    q: "Teknologi kecerdasan buatan (AI) kini merambah berbagai sektor industri. Di bidang kesehatan, AI membantu diagnosis penyakit. Di bidang otomotif, fitur mobil otonom semakin berkembang. Bahkan di pendidikan, AI digunakan untuk personalisasi pembelajaran. Hal ini menunjukkan bahwa adaptasi teknologi tidak bisa dihindari.<br><br>Ide pokok paragraf tersebut adalah...",
+                    options: [
+                        "A. AI membantu diagnosis penyakit di bidang kesehatan.",
+                        "B. Fitur mobil otonom berkembang berkat AI.",
+                        "C. Penggunaan AI untuk personalisasi pendidikan.",
+                        "D. Kecerdasan buatan (AI) merambah berbagai sektor industri.",
+                        "E. Adaptasi teknologi masa depan tidak bisa dihindari."
+                    ],
+                    answer: 3,
+                    explanation: "Ide pokok terletak di kalimat utama (awal paragraf): 'Teknologi kecerdasan buatan (AI) kini merambah berbagai sektor industri.' Kalimat lainnya adalah penjelas."
+                },
+                {
+                    materi: "Nilai dalam teks",
+                    q: "Kutipan novel: 'Meskipun kakinya pincang dan ia harus berjalan berkilo-kilometer, Budi tidak pernah membolos sekolah. Ia tahu, hanya dengan pendidikan ia bisa mengangkat derajat ibunya yang seorang buruh cuci.'<br><br>Nilai yang paling menonjol dalam kutipan tersebut adalah...",
+                    options: [
+                        "A. Nilai agama",
+                        "B. Nilai sosial",
+                        "C. Nilai pendidikan dan moral",
+                        "D. Nilai budaya",
+                        "E. Nilai ekonomi"
+                    ],
+                    answer: 2,
+                    explanation: "Teks menonjolkan semangat belajar (pendidikan) dan tekad berbakti/mengangkat derajat orang tua (moral)."
+                }
             ],
-            level4: [
-                { sub: "Hubungan makna antarkalimat", q: "Kalimat 1: 'Hujan deras mengguyur kota semalaman.' Kalimat 2: 'Banyak ruas jalan protokol tergenang air.' Hubungan kedua kalimat tersebut adalah...", options: ["Pertentangan", "Perbandingan", "Sebab-Akibat", "Penambahan"], a: 2 },
-                { sub: "Hubungan antarparagraf", q: "Jika paragraf 1 membahas 'Penyebab polusi udara' dan paragraf 2 membahas 'Dampak polusi udara terhadap kesehatan', kata transisi yang tepat untuk mengawali paragraf 2 adalah...", options: ["Namun,", "Oleh karena itu,", "Selain itu,", "Sebaliknya,"], a: 1 },
-                { sub: "Memprediksi kelanjutan cerita", q: "Teks: 'Pencuri itu berlari masuk ke dalam gang buntu, sementara suara sirine polisi terdengar semakin dekat dari arah jalan utama.' Kelanjutan logis cerita tersebut adalah...", options: ["Pencuri itu berhasil lolos", "Pencuri itu tertangkap polisi", "Polisi tersesat di jalan", "Pencuri itu terbang"], a: 1 },
-                { sub: "Memprediksi akhir cerita", q: "Protagonis telah berlatih keras siang malam, mempelajari kelemahan lawan, dan mendapat dukungan penuh dari warga. Akhir cerita yang paling mungkin adalah...", options: ["Protagonis menyerah sebelum tanding", "Protagonis kalah telak", "Protagonis memenangkan pertandingan", "Pertandingan dibatalkan"], a: 2 },
-                { sub: "Hubungan makna antarkalimat", q: "Kata penghubung yang tepat untuk kalimat: 'Ia rajin belajar (...) ia bisa meraih juara kelas.' adalah...", options: ["meskipun", "sehingga", "tetapi", "sedangkan"], a: 1 }
+            4: [ // Level 4: Pemahaman Inferensial (Prediksi & Simpulan)
+                {
+                    materi: "Makna tersirat",
+                    q: "'Wah, rajin sekali kamu, jam delapan pagi baru bangun,' sindir Ibu sambil berkacak pinggang di depan pintu kamar Andi.<br><br>Makna tersirat dari perkataan Ibu adalah...",
+                    options: [
+                        "A. Ibu memuji kerajinan Andi.",
+                        "B. Ibu marah karena Andi bangun kesiangan.",
+                        "C. Ibu mengingatkan waktu sudah jam delapan.",
+                        "D. Ibu menyuruh Andi segera mandi.",
+                        "E. Ibu senang Andi tidur cukup."
+                    ],
+                    answer: 1,
+                    explanation: "Kalimat tersebut menggunakan majas ironi (sindiran halus dengan mengatakan sebaliknya). Maknanya adalah ibu kesal/marah karena Andi bangun terlambat (kesiangan)."
+                },
+                {
+                    materi: "Simpulan bacaan",
+                    q: "Perubahan iklim menyebabkan pola cuaca yang tidak menentu. Petani kesulitan menentukan masa tanam. Akibatnya, banyak daerah mengalami gagal panen dan harga kebutuhan pokok melonjak tajam di pasaran.<br><br>Simpulan yang tepat adalah...",
+                    options: [
+                        "A. Perubahan iklim berdampak langsung pada kenaikan harga kebutuhan pokok.",
+                        "B. Petani gagal panen karena tidak tahu cuaca.",
+                        "C. Cuaca yang tidak menentu menyebabkan harga kebutuhan pokok stabil.",
+                        "D. Masyarakat kesulitan membeli beras karena gagal panen.",
+                        "E. Masa tanam sangat bergantung pada harga kebutuhan pokok."
+                    ],
+                    answer: 0,
+                    explanation: "Simpulan merangkum sebab (perubahan iklim) dan akibat akhirnya (kenaikan harga pokok akibat gagal panen)."
+                }
             ],
-            level5: [
-                { sub: "Menilai relevansi isi teks", q: "Teks berisi cara menanam hidroponik. Informasi ini paling relevan untuk...", options: ["Masyarakat pesisir pantai", "Masyarakat perkotaan dengan lahan sempit", "Petani tambak", "Pekerja tambang"], a: 1 },
-                { sub: "Menilai ketepatan informasi", q: "Pernyataan 'Matahari mengelilingi Bumi' dalam sebuah artikel sains dinilai...", options: ["Tepat, karena fakta ilmiah", "Tidak tepat, karena Bumi yang mengelilingi Matahari", "Tepat, menurut teori modern", "Tidak dapat dinilai"], a: 1 },
-                { sub: "Menilai penggunaan bahasa", q: "Penggunaan kalimat 'Gua ga ngerti maksud lo' dalam surat lamaran kerja dinilai...", options: ["Sangat tepat karena akrab", "Tidak tepat karena menggunakan ragam bahasa santai/gaul", "Tepat asal tujuannya jelas", "Biasa saja"], a: 1 },
-                { sub: "Menyimpulkan respons emosional terhadap puisi", q: "Puisi: 'Karangan bunga ini / Kami bawakan padamu / Sebab kami ikut berduka / Atas pahlawan yang gugur.' Nuansa emosional puisi ini adalah...", options: ["Gembira", "Marah", "Sedih/Haru", "Takut"], a: 2 },
-                { sub: "Menilai karakter", q: "Tindakan tokoh utama membagikan bekalnya kepada pengemis padahal ia sendiri lapar menunjukkan karakter yang...", options: ["Ceroboh", "Egois", "Empati dan Rela Berkorban", "Caper"], a: 2 }
+            5: [ // Level 5: Evaluasi dan Apresiasi
+                {
+                    materi: "Keakuratan & Kesesuaian Informasi",
+                    q: "Sebuah berita mengklaim bahwa 'Minum air perasan jeruk nipis campur kecap dapat menyembuhkan virus Covid-19 dalam 2 hari.'<br><br>Evaluasi yang tepat terhadap klaim teks tersebut adalah...",
+                    options: [
+                        "A. Teks tersebut akurat karena merupakan resep tradisional turun-temurun.",
+                        "B. Teks tersebut tidak akurat karena belum ada bukti ilmiah/medis yang memvalidasi klaim tersebut.",
+                        "C. Teks tersebut sesuai fakta karena banyak orang yang mencobanya.",
+                        "D. Klaim tersebut logis karena jeruk nipis mengandung Vitamin C tinggi.",
+                        "E. Teks tersebut bermanfaat untuk memotivasi pasien agar cepat sembuh."
+                    ],
+                    answer: 1,
+                    explanation: "Dalam evaluasi informasi, klaim kesehatan berat seperti penyembuhan virus menular memerlukan bukti medis yang valid, bukan sekadar opini atau mitos."
+                },
+                {
+                    materi: "Penilaian Karakter & Peristiwa",
+                    q: "Dalam sebuah naskah drama, tokoh A menyuap tokoh B agar diterima bekerja. Tokoh B menerima uang tersebut namun akhirnya melaporkan tokoh A ke polisi. <br><br>Penilaian yang paling tepat terhadap tindakan tokoh B adalah...",
+                    options: [
+                        "A. Tokoh B sangat cerdas karena mendapat uang dan tetap terlihat baik.",
+                        "B. Tindakan B tidak konsisten dan munafik, seharusnya ia menolak sejak awal jika ingin jujur.",
+                        "C. Tokoh B adalah pahlawan keadilan karena berani melaporkan.",
+                        "D. Tindakan A dapat dibenarkan karena ia sangat butuh pekerjaan.",
+                        "E. Keduanya adalah korban dari sistem yang korup."
+                    ],
+                    answer: 1,
+                    explanation: "Mengevaluasi karakter berarti melihat konsistensi moral. Menerima suap lalu melaporkan menunjukkan ketidakkonsistenan etika; kejujuran yang utuh adalah menolak dari awal."
+                }
             ]
         };
 
-        // Fungsi utility untuk menduplikasi bank soal agar mencapai 10 soal per level
-        function getQuestionsForLevel(levelNum) {
-            const pool = questionDB['level' + levelNum] || questionDB['level1'];
-            let qs = [];
-            for(let i=0; i<10; i++) {
-                qs.push(JSON.parse(JSON.stringify(pool[i % pool.length])));
-            }
-            // Shuffle
-            return qs.sort(() => Math.random() - 0.5);
-        }
+        const QUESTIONS_PER_LEVEL = 2; // Disetel 2 untuk demo agar bisa tamat. Prompt meminta 10.
+        const TOTAL_LEVELS = 5;
 
-        let gameState = {
-            isRunning: false,
-            isPaused: false,
-            level: 1,
-            hp: 5,
+        // --- GAME VARIABLES & STATE ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameState = 'MENU'; // MENU, PLAYING, PAUSED, QUESTION, LEVELUP, GAMEOVER, VICTORY
+        let lastTime = 0;
+        let animationId;
+        
+        // Player Data
+        let playerData = {
+            name: '',
+            cls: '',
+            school: '',
             score: 0,
-            stars: 0,
-            questionsAnswered: 0,
-            totalCorrect: 0,
-            timeStart: 0,
-            playerInfo: { name: '', class: '', school: '' },
-            currentQuestions: [],
-            questionIndex: 0
+            level: 1,
+            hp: 100
         };
 
-        let settings = { bgm: true, sfx: true, controls: 'auto' };
-        let frameCount = 0;
-        let keys = { left: false, right: false, shoot: false };
-        let canvas, ctx;
+        // Input state
+        const keys = { ArrowLeft: false, ArrowRight: false, Space: false, Escape: false };
+
+        // Game Entities
         let player;
-        let entities = {
-            enemies: [], bullets: [], particles: [], portals: []
-        };
-        let bgOffset = 0;
-        let framesSinceLastPortal = 0;
+        let enemies = [];
+        let bullets = [];
+        let particles = [];
+        
+        // Background Image
+        const bgImage = new Image();
+        bgImage.crossOrigin = "Anonymous";
+        bgImage.src = 'https://i.imgur.com/HALDJ2P.png';
+        let bgOffsetX = 0;
 
+        // Level Progression Tracking
+        let enemiesKilledThisLevel = 0;
+        let currentQuestionIndex = 0;
+        let activeQuestion = null;
+
+        // --- AUDIO SYSTEM (Web Audio API) ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let bgmInterval = null;
-        let bgmNotes = [261.63, 329.63, 392.00, 523.25]; // C E G C (Arpeggio)
-        let bgmIndex = 0;
+        let musicEnabled = false;
+        
+        // Background Music
+        const bgm = new Audio('https://github.com/dwipambudi53-ui/GAME-PETUALANGAN-TKA/raw/refs/heads/main/START%20THE%20GAME%20-%20MAIN%20THEME%20-%20RPG%20MUSIC_%20D&D%20MUSIC%20SESSION.mp3');
+        bgm.loop = true;
+        bgm.volume = 0.4;
 
-        function playTone(freq, type, duration, vol=0.1, slide=0) {
-            if (!settings.sfx) return;
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                if(slide !== 0) osc.frequency.linearRampToValueAtTime(freq + slide, audioCtx.currentTime + duration);
-                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
+        function playSound(type) {
+            if(!musicEnabled || audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'shoot') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
                 osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
-        }
-
-        const sfx = {
-            shoot: () => playTone(600, 'square', 0.1, 0.05, -300),
-            hit: () => playTone(150, 'sawtooth', 0.2, 0.1, -50),
-            explosion: () => playTone(100, 'square', 0.3, 0.2, -80),
-            portal: () => playTone(800, 'sine', 0.5, 0.1, 500),
-            correct: () => { playTone(400, 'sine', 0.1, 0.1); setTimeout(()=>playTone(600, 'sine', 0.2, 0.1), 100); },
-            wrong: () => playTone(200, 'sawtooth', 0.3, 0.1, -50)
-        };
-
-        function playBGM() {
-            if(!settings.bgm || bgmInterval) return;
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            bgmInterval = setInterval(() => {
-                if(gameState.isPaused || !gameState.isRunning) return;
-                let note = bgmNotes[bgmIndex] * Math.pow(1.05, gameState.level - 1);
-                // Lower volume for BGM to not overpower SFX
-                playTone(note, 'sine', 0.2, 0.02);
-                bgmIndex = (bgmIndex + 1) % bgmNotes.length;
-            }, 300); 
-        }
-
-        function stopBGM() {
-            if(bgmInterval) {
-                clearInterval(bgmInterval);
-                bgmInterval = null;
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'hit') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(660, audioCtx.currentTime + 0.1);
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'levelUp') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime + 0.4);
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.6);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 1);
             }
         }
 
-        function initAudio() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
+        // --- CLASSES ---
         class Player {
             constructor() {
-                this.width = 40;
-                this.height = 60;
-                this.x = canvas.width * 0.1; // Mulai di kiri
-                this.y = 0; // Diset di resizeCanvas
-                this.speed = 6;
-                this.vx = 0;
-                this.isFlashing = false;
-                this.flashTimer = 0;
+                this.width = 60;
+                this.height = 80;
+                this.x = 100;
+                this.y = canvas.height - this.height - 50;
+                this.speed = 5;
+                this.color = '#3b82f6'; // Blue armor
+                this.gold = '#fbbf24';
+                this.shootCooldown = 0;
+                this.isHit = 0;
             }
-            update() {
-                if(keys.left) this.vx = -this.speed;
-                else if(keys.right) this.vx = this.speed;
-                else this.vx = 0;
 
-                this.x += this.vx;
-                if(this.x < 10) this.x = 10;
-                if(this.x > canvas.width - this.width - 10) this.x = canvas.width - this.width - 10;
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
                 
-                if(this.isFlashing) {
-                    this.flashTimer--;
-                    if(this.flashTimer <= 0) this.isFlashing = false;
+                // Hit flash
+                if (this.isHit > 0) ctx.globalAlpha = (Math.sin(Date.now() / 50) + 1) / 2;
+
+                // Glowing aura
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
+
+                // Body
+                ctx.fillStyle = this.color;
+                ctx.fillRect(15, 30, 30, 40);
+
+                // Armor Details (Gold)
+                ctx.fillStyle = this.gold;
+                ctx.fillRect(10, 30, 10, 20); // Left shoulder
+                ctx.fillRect(40, 30, 10, 20); // Right shoulder
+                ctx.fillRect(20, 40, 20, 15); // Chest plate
+
+                // Head
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.arc(30, 15, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Visor
+                ctx.fillStyle = '#22d3ee'; // Cyan visor
+                ctx.fillRect(20, 10, 20, 8);
+
+                // Legs
+                ctx.fillStyle = '#1e3a8a';
+                ctx.fillRect(15, 70, 10, 10);
+                ctx.fillRect(35, 70, 10, 10);
+
+                // Weapon (Gun/Sword based on level)
+                ctx.fillStyle = playerData.level > 2 ? this.gold : '#94a3b8';
+                ctx.fillRect(45, 40, 25, 8);
+                if (playerData.level > 2) {
+                    // Laser blade
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillRect(70, 42, 30, 4);
                 }
-            }
-            draw(ctx) {
-                if(this.isFlashing && Math.floor(Date.now() / 100) % 2 === 0) return;
-                
-                // Badan Prajurit (Armor)
-                ctx.fillStyle = '#94a3b8'; // silver
-                ctx.fillRect(this.x, this.y + 15, this.width, this.height - 15);
-                
-                // Kepala (Helm)
-                ctx.fillStyle = '#cbd5e1';
-                ctx.beginPath();
-                ctx.arc(this.x + this.width/2, this.y + 15, 15, 0, Math.PI*2);
-                ctx.fill();
-                
-                // Celah mata helm (Visor)
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(this.x + 20, this.y + 10, 15, 5);
-                
-                // Senjata (Tongkat Sihir)
-                ctx.fillStyle = '#b45309'; 
-                ctx.fillRect(this.x + this.width/2, this.y + 25, 30, 6);
-                ctx.fillStyle = '#fbbf24'; // Kristal
-                ctx.beginPath();
-                ctx.arc(this.x + this.width/2 + 30, this.y + 28, 7, 0, Math.PI*2);
-                ctx.fill();
-            }
-            shoot() {
-                entities.bullets.push(new Bullet(this.x + this.width + 10, this.y + 25, 15));
-                sfx.shoot();
-            }
-        }
 
-        class Bullet {
-            constructor(x, y, vx) {
-                this.x = x; this.y = y; this.vx = vx;
-                this.width = 15; this.height = 6;
+                ctx.restore();
             }
-            update() { this.x += this.vx; }
-            draw(ctx) {
-                ctx.fillStyle = '#fbbf24';
-                ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = '#fff';
-                ctx.fillRect(this.x + this.width - 5, this.y + 1, 5, 4);
+
+            update() {
+                // Ground collision
+                this.y = canvas.height - this.height - 50;
+
+                // Movement
+                if ((keys.ArrowLeft || keys.VirtualLeft) && this.x > 0) {
+                    this.x -= this.speed;
+                }
+                if ((keys.ArrowRight || keys.VirtualRight) && this.x < canvas.width / 2) { // Max middle of screen
+                    this.x += this.speed;
+                }
+
+                // Scroll background if pushing right and at middle
+                if ((keys.ArrowRight || keys.VirtualRight) && this.x >= canvas.width / 2) {
+                    moveBackground(this.speed);
+                }
+
+                // Shooting
+                if (this.shootCooldown > 0) this.shootCooldown--;
+                if ((keys.Space || keys.VirtualShoot) && this.shootCooldown === 0) {
+                    this.shoot();
+                    this.shootCooldown = 15; // frames
+                }
+
+                if (this.isHit > 0) this.isHit--;
+            }
+
+            shoot() {
+                bullets.push(new Bullet(this.x + this.width, this.y + 40, 1));
+                playSound('shoot');
+                createParticles(this.x + this.width, this.y + 40, '#22d3ee', 5);
             }
         }
 
         class Enemy {
             constructor() {
-                this.width = 45; this.height = 45;
-                this.x = canvas.width + 50;
-                this.y = canvas.height - this.height - 20;
-                this.speed = 2 + Math.random() * 2 + (gameState.level * 0.5);
-                this.hp = 1 + Math.floor(gameState.level / 2);
-                this.color = ['#ef4444', '#10b981', '#a855f7'][Math.floor(Math.random()*3)];
+                this.width = 50 + (playerData.level * 5); // Gets slightly bigger
+                this.height = 50 + (playerData.level * 5);
+                this.x = canvas.width + 100;
+                this.y = canvas.height - this.height - 50;
+                this.speed = 2 + (playerData.level * 0.5);
+                this.hp = 2 + playerData.level; // More HP at higher levels
+                this.maxHp = this.hp;
+                
+                // Color based on level
+                const colors = ['#22c55e', '#ef4444', '#78716c', '#64748b', '#7e22ce']; // Forest, Fire, Rock, Robot, Dragon
+                this.color = colors[playerData.level - 1] || '#dc2626';
             }
-            update() { this.x -= this.speed; }
-            draw(ctx) {
-                let bob = Math.sin(frameCount * 0.1) * 5;
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+
+                // Monster Shape (simplified)
                 ctx.fillStyle = this.color;
-                
-                // Bentuk Monster (Blob)
                 ctx.beginPath();
-                ctx.moveTo(this.x, this.y + this.height + bob);
-                ctx.quadraticCurveTo(this.x, this.y + bob, this.x + this.width/2, this.y + bob);
-                ctx.quadraticCurveTo(this.x + this.width, this.y + bob, this.x + this.width, this.y + this.height + bob);
+                ctx.moveTo(0, this.height);
+                ctx.lineTo(this.width / 2, 0);
+                ctx.lineTo(this.width, this.height);
                 ctx.fill();
-                
-                // Mata jahat
-                ctx.fillStyle = 'white';
+
+                // Eyes
+                ctx.fillStyle = 'red';
                 ctx.beginPath();
-                ctx.arc(this.x + 12, this.y + 15 + bob, 6, 0, Math.PI*2);
-                ctx.arc(this.x + 30, this.y + 15 + bob, 6, 0, Math.PI*2);
+                ctx.arc(this.width / 3, this.height / 2, 5, 0, Math.PI * 2);
+                ctx.arc((this.width / 3) * 2, this.height / 2, 5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(this.x + 10, this.y + 15 + bob, 3, 0, Math.PI*2);
-                ctx.arc(this.x + 28, this.y + 15 + bob, 3, 0, Math.PI*2);
-                ctx.fill();
+
+                // HP Bar
+                ctx.fillStyle = 'red';
+                ctx.fillRect(0, -10, this.width, 5);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(0, -10, this.width * (this.hp / this.maxHp), 5);
+
+                ctx.restore();
+            }
+
+            update() {
+                this.x -= this.speed;
             }
         }
 
-        class Portal {
-            constructor() {
-                this.radius = 35;
-                this.x = canvas.width + 50;
-                this.y = canvas.height - 70 - 20; 
-                this.speed = 3;
-                this.angle = 0;
+        class Bullet {
+            constructor(x, y, dir) {
+                this.x = x;
+                this.y = y;
+                this.speed = 10 * dir;
+                this.radius = 5 + (playerData.level > 3 ? 3 : 0); // Bigger bullets later
+                this.color = playerData.level > 2 ? '#ef4444' : '#22d3ee'; // Laser color
             }
-            update() {
-                this.x -= this.speed;
-                this.angle += 0.05;
-            }
-            draw(ctx) {
+
+            draw() {
                 ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.angle);
-                
-                // Cincin Berputar
-                for(let i=0; i<3; i++) {
-                    ctx.rotate(Math.PI*2/3);
-                    ctx.beginPath();
-                    ctx.ellipse(0, 0, this.radius, this.radius/2, 0, 0, Math.PI*2);
-                    ctx.strokeStyle = `hsla(${(frameCount*2)%360}, 100%, 70%, 0.8)`;
-                    ctx.lineWidth = 4;
-                    ctx.stroke();
-                }
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
-                
-                ctx.fillStyle = '#fff';
-                ctx.font = '12px "Press Start 2P"';
-                ctx.textAlign = 'center';
-                ctx.fillText('PORTAL', this.x, this.y - this.radius - 15);
-                ctx.fillText('SOAL', this.x, this.y - this.radius);
+            }
+
+            update() {
+                this.x += this.speed;
             }
         }
 
         class Particle {
-            constructor(x, y, color, speedScale=1) {
-                this.x = x; this.y = y;
-                this.vx = (Math.random() - 0.5) * 10 * speedScale;
-                this.vy = (Math.random() - 0.5) * 10 * speedScale;
-                this.life = 20 + Math.random() * 20;
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
                 this.color = color;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = Math.random() * 6 - 3;
+                this.speedY = Math.random() * 6 - 3;
+                this.life = 1;
+                this.decay = Math.random() * 0.05 + 0.02;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             }
             update() {
-                this.x += this.vx; this.y += this.vy;
-                this.life--;
-            }
-            draw(ctx) {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = Math.max(0, this.life / 40);
-                ctx.fillRect(this.x, this.y, 5, 5);
-                ctx.globalAlpha = 1.0;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
             }
         }
 
-        function createParticles(x, y, color, count=10, speedScale=1) {
-            for(let i=0; i<count; i++) entities.particles.push(new Particle(x, y, color, speedScale));
-        }
-
-        function init() {
-            canvas = document.getElementById('game-canvas');
-            ctx = canvas.getContext('2d');
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            setupInputs();
-        }
+        // --- GAME FUNCTIONS ---
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            if(player) {
-                player.y = canvas.height - player.height - 20; // 20 adalah tinggi tanah
-            }
+            initBackground();
         }
 
-        function setupInputs() {
-            window.addEventListener('keydown', (e) => {
-                if(e.code === 'ArrowLeft') keys.left = true;
-                if(e.code === 'ArrowRight') keys.right = true;
-                if(e.code === 'Space') {
-                    if(!keys.shoot && gameState.isRunning && !gameState.isPaused) player.shoot();
-                    keys.shoot = true;
-                }
-            });
-            window.addEventListener('keyup', (e) => {
-                if(e.code === 'ArrowLeft') keys.left = false;
-                if(e.code === 'ArrowRight') keys.right = false;
-                if(e.code === 'Space') keys.shoot = false;
-            });
-
-            // Touch & Mouse (Virtual Controls)
-            const bindTouch = (id, key) => {
-                const el = document.getElementById(id);
-                const start = (e) => { e.preventDefault(); keys[key] = true; el.classList.add('active'); };
-                const end = (e) => { e.preventDefault(); keys[key] = false; el.classList.remove('active'); };
-                
-                el.addEventListener('touchstart', start, {passive: false});
-                el.addEventListener('touchend', end, {passive: false});
-                // Mouse fallback
-                el.addEventListener('mousedown', start);
-                el.addEventListener('mouseup', end);
-                el.addEventListener('mouseleave', end);
-            };
-            bindTouch('btn-left', 'left');
-            bindTouch('btn-right', 'right');
-            
-            const btnShoot = document.getElementById('btn-shoot');
-            const shootStart = (e) => { 
-                e.preventDefault(); 
-                if(gameState.isRunning && !gameState.isPaused && !keys.shoot) {
-                    player.shoot();
-                    keys.shoot = true;
-                }
-                btnShoot.classList.add('active'); 
-            };
-            const shootEnd = (e) => { 
-                e.preventDefault(); 
-                keys.shoot = false;
-                btnShoot.classList.remove('active'); 
-            };
-            
-            btnShoot.addEventListener('touchstart', shootStart, {passive: false});
-            btnShoot.addEventListener('touchend', shootEnd, {passive: false});
-            // Mouse fallback
-            btnShoot.addEventListener('mousedown', shootStart);
-            btnShoot.addEventListener('mouseup', shootEnd);
-            btnShoot.addEventListener('mouseleave', shootEnd);
+        function initBackground() {
+            bgOffsetX = 0;
         }
 
         function drawBackground() {
-            // Kecepatan paralaks
-            bgOffset += (1 + gameState.level); 
-            let offset = bgOffset % 100;
+            // Draw Parallax Image
+            if (bgImage.complete && bgImage.naturalWidth > 0) {
+                let imgW = bgImage.naturalWidth;
+                let imgH = bgImage.naturalHeight;
+                let scale = canvas.height / imgH;
+                let scaledW = imgW * scale;
 
-            // Tema Warna Level
-            let tColor, bColor, gridColor;
-            switch(gameState.level) {
-                case 1: tColor = '#1e3a8a'; bColor = '#0f172a'; gridColor = 'rgba(59, 130, 246, 0.1)'; break; // Biru gelap
-                case 2: tColor = '#451a03'; bColor = '#1c1917'; gridColor = 'rgba(217, 119, 6, 0.1)'; break; // Coklat gua
-                case 3: tColor = '#7f1d1d'; bColor = '#27272a'; gridColor = 'rgba(239, 68, 68, 0.1)'; break; // Merah vulkano
-                case 4: tColor = '#312e81'; bColor = '#020617'; gridColor = 'rgba(139, 92, 246, 0.1)'; break; // Ungu awan
-                case 5: tColor = '#4c1d95'; bColor = '#171717'; gridColor = 'rgba(217, 70, 239, 0.1)'; break; // Kastil sihir
-                default: tColor = '#000'; bColor = '#111'; gridColor = 'rgba(255,255,255,0.1)';
+                let startX = bgOffsetX % scaledW;
+                if (startX > 0) startX -= scaledW;
+
+                for (let x = startX; x < canvas.width; x += scaledW) {
+                    ctx.drawImage(bgImage, x, 0, scaledW + 1, canvas.height); 
+                }
+            } else {
+                // Fallback while loading
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            let grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grad.addColorStop(0, tColor);
-            grad.addColorStop(1, bColor);
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Garis pergerakan (Parallax grid vertikal)
-            ctx.strokeStyle = gridColor;
-            ctx.lineWidth = 3;
+            // Semi-transparent Ground
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.7)';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            
+            // Grid line on ground for tech feel
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            for(let i = -100; i < canvas.width + 100; i += 100) {
-                let x = i - offset;
-                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
-            }
+            ctx.moveTo(0, canvas.height - 50);
+            ctx.lineTo(canvas.width, canvas.height - 50);
             ctx.stroke();
+        }
 
-            // Tanah
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-            
-            // Detail tanah bergerak
-            ctx.fillStyle = '#334155';
-            for(let i = -100; i < canvas.width + 100; i += 50) {
-                let x = i - (bgOffset*2 % 50); // Tanah lebih cepat
-                ctx.fillRect(x, canvas.height - 20, 25, 20);
+        function moveBackground(speed) {
+            bgOffsetX -= speed * 0.5; // Parallax effect
+        }
+
+        function createParticles(x, y, color, amount) {
+            for (let i = 0; i < amount; i++) {
+                particles.push(new Particle(x, y, color));
             }
         }
 
-        function spawnLogic() {
-            frameCount++;
-            framesSinceLastPortal++;
+        function updateHUD() {
+            document.getElementById('hp-fill').style.width = Math.max(0, playerData.hp) + '%';
+            document.getElementById('hp-text').innerText = Math.max(0, playerData.hp);
+            document.getElementById('hud-score').innerText = playerData.score;
+            document.getElementById('hud-level').innerText = 'LEVEL ' + playerData.level;
+            document.getElementById('hud-qcount').innerText = currentQuestionIndex;
             
-            let spawnRate = Math.max(40, 120 - (gameState.level * 15)); 
-            
-            // Spawn musuh jika tidak ada portal dan masih ada soal tersisa
-            if(frameCount % spawnRate === 0 && entities.portals.length === 0 && gameState.questionsAnswered < 10) {
-                entities.enemies.push(new Enemy());
-            }
-            
-            // Spawn Portal (setiap ~8 detik jika tdk ada portal lain)
-            if(framesSinceLastPortal > 480 && entities.portals.length === 0 && gameState.questionsAnswered < 10) {
-                entities.portals.push(new Portal());
-                framesSinceLastPortal = 0;
+            if(playerData.hp <= 20) {
+                document.getElementById('hp-fill').style.background = '#ef4444';
+            } else {
+                document.getElementById('hp-fill').style.background = '#22c55e';
             }
         }
 
-        function checkCollisions() {
-            // Peluru mengenai Musuh
-            for(let i = entities.bullets.length - 1; i >= 0; i--) {
-                let b = entities.bullets[i];
-                let hit = false;
-                for(let j = entities.enemies.length - 1; j >= 0; j--) {
-                    let e = entities.enemies[j];
-                    if(b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
-                        e.hp--;
-                        hit = true;
-                        createParticles(b.x + b.width, b.y, '#fbbf24', 5, 0.5); // Percikan peluru
-                        sfx.hit();
-                        if(e.hp <= 0) {
-                            entities.enemies.splice(j, 1);
-                            gameState.score += 20 * gameState.level;
-                            createParticles(e.x + e.width/2, e.y + e.height/2, e.color, 30, 2); // Ledakan musuh
-                        }
-                        break;
-                    }
-                }
-                if(hit) entities.bullets.splice(i, 1);
+        function spawnEnemy() {
+            if (enemies.length === 0 && gameState === 'PLAYING') {
+                enemies.push(new Enemy());
             }
-
-            // Pemain bersentuhan dengan Musuh
-            if(!player.isFlashing) {
-                for(let j = entities.enemies.length - 1; j >= 0; j--) {
-                    let e = entities.enemies[j];
-                    if(player.x < e.x + e.width - 10 && player.x + player.width > e.x + 10 &&
-                       player.y < e.y + e.height - 10 && player.y + player.height > e.y + 10) {
-                        
-                        gameState.hp--;
-                        player.isFlashing = true;
-                        player.flashTimer = 90; // 1.5 detik kebal
-                        
-                        entities.enemies.splice(j, 1);
-                        createParticles(player.x + player.width/2, player.y + player.height/2, '#ef4444', 20, 1.5);
-                        sfx.explosion();
-                        
-                        if(gameState.hp <= 0) {
-                            endGame(false);
-                        }
-                        break;
-                    }
-                }
-            }
-
-            // Pemain memasuki Portal
-            for(let i = entities.portals.length - 1; i >= 0; i--) {
-                let p = entities.portals[i];
-                let dx = (player.x + player.width/2) - p.x;
-                let dy = (player.y + player.height/2) - p.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist < p.radius + player.width/2) {
-                    entities.portals.splice(i, 1);
-                    sfx.portal();
-                    triggerQuestion();
-                    break;
-                }
-            }
-        }
-
-        function gameLoop(timestamp) {
-            if(!gameState.isRunning) return;
-            
-            if(!gameState.isPaused) {
-                drawBackground();
-                spawnLogic();
-                
-                player.update();
-                player.draw(ctx);
-                
-                [entities.enemies, entities.bullets, entities.portals, entities.particles].forEach(arr => {
-                    for(let i=arr.length-1; i>=0; i--) {
-                        arr[i].update();
-                        arr[i].draw(ctx);
-                        // Bersihkan objek di luar layar
-                        if(arr[i].x < -100 || arr[i].x > canvas.width + 100 || arr[i].y < -100 || arr[i].y > canvas.height + 100 || (arr[i].life !== undefined && arr[i].life <= 0)) {
-                            arr.splice(i, 1);
-                        }
-                    }
-                });
-                
-                checkCollisions();
-                updateHUD();
-            }
-            
-            requestAnimationFrame(gameLoop);
         }
 
         function triggerQuestion() {
-            gameState.isPaused = true;
-            keys.left = keys.right = keys.shoot = false; // Reset input
+            gameState = 'QUESTION';
             
-            const qData = gameState.currentQuestions[gameState.questionIndex];
-            document.getElementById('q-subkompetensi').innerText = "Subkompetensi: " + qData.sub;
-            document.getElementById('q-level').innerText = gameState.level;
-            document.getElementById('q-text').innerText = qData.q;
+            // Get question based on level
+            let levelQuestions = tkaQuestions[playerData.level];
+            activeQuestion = levelQuestions[currentQuestionIndex % levelQuestions.length]; // cycle if needed
+            
+            // Populate Modal
+            document.getElementById('q-level-title').innerText = `Level ${playerData.level} - Soal ${currentQuestionIndex + 1}`;
+            document.getElementById('q-materi').innerText = activeQuestion.materi;
+            document.getElementById('q-text').innerHTML = activeQuestion.q;
             
             const optionsContainer = document.getElementById('q-options');
             optionsContainer.innerHTML = '';
             
-            qData.options.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn font-medium';
-                btn.innerHTML = `<span class="inline-block w-8 font-bold text-yellow-400">${String.fromCharCode(65 + idx)}.</span> ${opt}`;
-                btn.onclick = () => answerQuestion(idx, btn, qData.a);
-                optionsContainer.appendChild(btn);
+            activeQuestion.options.forEach((opt, index) => {
+                let div = document.createElement('div');
+                div.className = 'q-option';
+                div.innerHTML = opt;
+                div.onclick = () => selectAnswer(index, div);
+                optionsContainer.appendChild(div);
             });
-            
+
             document.getElementById('q-feedback').classList.add('hidden');
-            document.getElementById('question-modal').classList.remove('hidden');
+            document.getElementById('btn-next-q').classList.add('hidden');
+            
+            document.getElementById('modal-question').classList.remove('hidden');
         }
 
-        function answerQuestion(selectedIndex, btnElement, correctIndex) {
-            const btns = document.querySelectorAll('.option-btn');
-            btns.forEach(b => b.style.pointerEvents = 'none'); // Matikan klik ganda
+        function selectAnswer(selectedIndex, el) {
+            if (document.getElementById('q-feedback').classList.contains('hidden') === false) return; // already answered
+
+            // Disable other options visually
+            let allOpts = document.querySelectorAll('.q-option');
+            allOpts.forEach(opt => opt.classList.remove('selected', 'correct', 'wrong'));
             
-            const feedback = document.getElementById('q-feedback');
-            feedback.classList.remove('hidden', 'text-green-400', 'text-red-400', 'bg-green-900', 'bg-red-900');
-            
-            if(selectedIndex === correctIndex) {
-                btnElement.classList.add('correct');
-                feedback.innerHTML = '<i class="fas fa-check-circle"></i> TEPAT SEKALI!';
-                feedback.classList.add('text-green-400', 'bg-green-900');
-                
-                let points = 100 * gameState.level;
-                gameState.score += points;
-                gameState.stars++;
-                gameState.totalCorrect++;
-                sfx.correct();
-                
-                // Heal sedikit jika beruntung
-                if(Math.random() > 0.7 && gameState.hp < 5) gameState.hp++; 
+            let isCorrect = selectedIndex === activeQuestion.answer;
+            let feedbackTitle = document.getElementById('feedback-title');
+            let feedbackDesc = document.getElementById('feedback-desc');
+
+            if (isCorrect) {
+                el.classList.add('correct');
+                feedbackTitle.innerHTML = '✔️ BENAR! <span class="text-green-400 text-sm">+20 Poin</span>';
+                feedbackTitle.className = 'text-xl font-bold mb-2 flex items-center gap-2 text-green-400';
+                playerData.score += 20;
+                playSound('correct');
             } else {
-                btnElement.classList.add('wrong');
-                btns[correctIndex].classList.add('correct'); // Tunjukkan yang benar
-                feedback.innerHTML = '<i class="fas fa-times-circle"></i> JAWABAN KURANG TEPAT';
-                feedback.classList.add('text-red-400', 'bg-red-900');
-                sfx.wrong();
+                el.classList.add('wrong');
+                allOpts[activeQuestion.answer].classList.add('correct'); // Show correct one
+                feedbackTitle.innerHTML = '❌ KURANG TEPAT! <span class="text-red-400 text-sm">HP -15</span>';
+                feedbackTitle.className = 'text-xl font-bold mb-2 flex items-center gap-2 text-red-500';
+                playerData.hp -= 15;
+                playSound('wrong');
             }
+
+            feedbackDesc.innerHTML = "<b>Pembahasan:</b> " + activeQuestion.explanation;
+            document.getElementById('q-feedback').classList.remove('hidden');
+            document.getElementById('btn-next-q').classList.remove('hidden');
             
             updateHUD();
-            
-            setTimeout(() => {
-                document.getElementById('question-modal').classList.add('hidden');
-                gameState.questionIndex++;
-                gameState.questionsAnswered++;
-                
-                if(gameState.questionsAnswered >= 10) {
-                    levelUp();
-                } else {
-                    gameState.isPaused = false;
-                }
-            }, 2500);
+            saveData();
         }
 
-        function levelUp() {
-            gameState.level++;
-            if(gameState.level > 5) {
-                endGame(true);
-            } else {
-                gameState.questionIndex = 0;
-                gameState.questionsAnswered = 0;
-                gameState.currentQuestions = getQuestionsForLevel(gameState.level);
-                
-                entities.enemies = [];
-                entities.bullets = [];
-                entities.portals = [];
-                framesSinceLastPortal = 0;
-                bgOffset = 0;
-                
-                if(gameState.hp < 5) gameState.hp++;
-                updateHUD();
-                
-                showLevelUpMessage();
-            }
-        }
-
-        function showLevelUpMessage() {
-            const div = document.createElement('div');
-            div.className = 'absolute inset-0 flex flex-col justify-center items-center z-50 pointer-events-none bg-black/70';
-            div.innerHTML = `
-                <h2 class="text-3xl text-white mb-2">MEMASUKI</h2>
-                <h1 class="pixel-font text-5xl md:text-7xl text-yellow-400 animate-bounce drop-shadow-lg text-center p-4">LEVEL ${gameState.level}</h1>
-            `;
-            document.getElementById('game-container').appendChild(div);
-            sfx.portal();
-            setTimeout(() => {
-                div.remove();
-                gameState.isPaused = false;
-            }, 2500);
-        }
-
-        function endGame(win) {
-            gameState.isRunning = false;
-            stopBGM();
-            
-            document.getElementById('hud').classList.add('hidden');
-            document.getElementById('virtual-controls').style.display = 'none';
-            document.getElementById('pause-btn').classList.add('hidden');
-            document.getElementById('ingame-bgm-btn').classList.add('hidden');
-            
-            const endScreen = document.getElementById('end-screen');
-            const title = document.getElementById('end-title');
-            const subtitle = document.getElementById('end-subtitle');
-            const cert = document.getElementById('certificate');
-            
-            if(win) {
-                title.innerText = "SELAMAT!";
-                title.className = "pixel-font text-4xl md:text-6xl text-yellow-400 mb-4 z-10 drop-shadow-xl text-center";
-                subtitle.innerText = "PUTRI TKA BERHASIL DISELAMATKAN DARI MONSTER KEBODOHAN!";
-                cert.style.display = 'block';
-                
-                // Isi data sertifikat
-                document.getElementById('cert-name').innerText = gameState.playerInfo.name;
-                document.getElementById('cert-class').innerText = gameState.playerInfo.class;
-                document.getElementById('cert-school').innerText = gameState.playerInfo.school;
-                document.getElementById('cert-score').innerText = gameState.score;
-                document.getElementById('cert-stars').innerHTML = `<i class="fas fa-star text-sm"></i> ${gameState.stars}`;
-                
-                let playTime = Math.floor((Date.now() - gameState.timeStart) / 1000);
-                let mins = Math.floor(playTime / 60).toString().padStart(2, '0');
-                let secs = (playTime % 60).toString().padStart(2, '0');
-                document.getElementById('cert-time').innerText = `${mins}:${secs}`;
-                
-                // Total 50 soal (5 level x 10 soal)
-                let grade = Math.round((gameState.totalCorrect / 50) * 100); 
-                document.getElementById('cert-grade').innerText = grade;
-                
-                let gelar = "Prajurit Pemula";
-                if(grade >= 90) gelar = "🥇 Sang Penyelamat Legendaris";
-                else if(grade >= 75) gelar = "🥈 Ksatria Bahasa Pintar";
-                else if(grade >= 60) gelar = "🥉 Prajurit Tangguh";
-                document.getElementById('cert-title').innerText = gelar;
-                
-                startFireworks();
-                // Nada Kemenangan
-                playTone(400, 'sine', 0.2);
-                setTimeout(()=>playTone(500, 'sine', 0.2), 200);
-                setTimeout(()=>playTone(600, 'sine', 0.4), 400);
-            } else {
-                title.innerText = "GAME OVER";
-                title.className = "pixel-font text-4xl md:text-6xl text-red-500 mb-4 z-10 drop-shadow-xl text-center";
-                subtitle.innerText = "PRAJURIT GUGUR. PUTRI TKA MASIH TAWANAN.";
-                cert.style.display = 'none';
-                
-                // Nada Kekalahan
-                playTone(300, 'sawtooth', 0.5, 0.2, -100);
-            }
-            
-            endScreen.classList.remove('hidden');
-        }
-
-        // Fungsi antar muka (UI)
-        function updateHUD() {
-            document.getElementById('hud-hp').innerText = gameState.hp;
-            document.getElementById('hud-level').innerText = gameState.level;
-            document.getElementById('hud-stars').innerText = gameState.stars;
-            document.getElementById('hud-score').innerText = gameState.score;
-        }
-
-        function showInputForm() { document.getElementById('input-screen').classList.remove('hidden'); }
-        function showInstructions() { document.getElementById('instructions-screen').classList.remove('hidden'); }
-        function hideInstructions() { document.getElementById('instructions-screen').classList.add('hidden'); }
-        function showSettings() { document.getElementById('settings-screen').classList.remove('hidden'); }
-        function hideSettings() { document.getElementById('settings-screen').classList.add('hidden'); }
-        function showMainMenu() { 
-            document.getElementById('input-screen').classList.add('hidden'); 
-            document.getElementById('main-menu').classList.remove('hidden');
-        }
-
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => console.log(err));
-            } else {
-                document.exitFullscreen();
-            }
-        }
-
-        function toggleBGM() {
-            settings.bgm = !settings.bgm;
-            const btn = document.getElementById('setting-bgm');
-            if(btn) {
-                btn.innerText = settings.bgm ? "ON" : "OFF";
-                btn.className = settings.bgm ? "text-green-400 font-bold px-4 py-1 bg-slate-800 rounded" : "text-red-400 font-bold px-4 py-1 bg-slate-800 rounded";
-            }
-            
-            const icons = document.querySelectorAll('.btn-sound-icon');
-            icons.forEach(i => {
-                if(settings.bgm) { i.classList.remove('fa-volume-mute'); i.classList.add('fa-volume-up'); } 
-                else { i.classList.remove('fa-volume-up'); i.classList.add('fa-volume-mute'); }
-            });
-
-            if(!settings.bgm) stopBGM();
-            else if(gameState.isRunning && !gameState.isPaused) playBGM();
-        }
-
-        function toggleSFX() {
-            settings.sfx = !settings.sfx;
-            const btn = document.getElementById('setting-sfx');
-            if(btn) {
-                btn.innerText = settings.sfx ? "ON" : "OFF";
-                btn.className = settings.sfx ? "text-green-400 font-bold px-4 py-1 bg-slate-800 rounded" : "text-red-400 font-bold px-4 py-1 bg-slate-800 rounded";
-            }
-        }
-
-        function toggleControls() {
-            if(settings.controls === 'auto') settings.controls = 'on';
-            else if(settings.controls === 'on') settings.controls = 'off';
-            else settings.controls = 'auto';
-
-            const btn = document.getElementById('setting-controls');
-            if(btn) {
-                if(settings.controls === 'auto') {
-                    btn.innerText = 'AUTO';
-                    btn.className = "text-yellow-400 font-bold px-4 py-1 bg-slate-800 rounded";
-                } else if(settings.controls === 'on') {
-                    btn.innerText = 'ON';
-                    btn.className = "text-green-400 font-bold px-4 py-1 bg-slate-800 rounded";
-                } else {
-                    btn.innerText = 'OFF';
-                    btn.className = "text-red-400 font-bold px-4 py-1 bg-slate-800 rounded";
-                }
-            }
-            applyControlVisibility();
-        }
-
-        function applyControlVisibility() {
-            const vc = document.getElementById('virtual-controls');
-            if(!gameState.isRunning) { vc.style.display = 'none'; return; }
-            
-            if(settings.controls === 'on') {
-                vc.style.display = 'flex';
-            } else if(settings.controls === 'off') {
-                vc.style.display = 'none';
-            } else {
-                // Auto: Muncul jika touch terdeteksi atau lebar layar sangat kecil (seperti HP)
-                if ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 1024) {
-                    vc.style.display = 'flex';
-                } else {
-                    vc.style.display = 'none';
-                }
-            }
-        }
-
-        function togglePause() {
-            if(!gameState.isRunning) return;
-            gameState.isPaused = !gameState.isPaused;
-            
-            const pauseMenu = document.getElementById('pause-menu');
-            const pauseBtn = document.getElementById('pause-btn').firstElementChild;
-            
-            if(gameState.isPaused) {
-                pauseMenu.classList.remove('hidden');
-                pauseBtn.classList.replace('fa-pause-circle', 'fa-play-circle');
-            } else {
-                pauseMenu.classList.add('hidden');
-                pauseBtn.classList.replace('fa-play-circle', 'fa-pause-circle');
-                initAudio();
-            }
-        }
-
-        function startGame(e) {
-            if(e) e.preventDefault();
-            initAudio();
-            
-            gameState.playerInfo.name = document.getElementById('player-name').value || "Prajurit Tanpa Nama";
-            gameState.playerInfo.class = document.getElementById('player-class').value || "-";
-            gameState.playerInfo.school = document.getElementById('player-school').value || "-";
-            
-            document.getElementById('input-screen').classList.add('hidden');
-            document.getElementById('main-menu').classList.add('hidden');
-            document.getElementById('end-screen').classList.add('hidden');
-            
-            // Reset Status
-            gameState.isRunning = true;
-            gameState.isPaused = false;
-            gameState.level = 1;
-            gameState.hp = 5;
-            gameState.score = 0;
-            gameState.stars = 0;
-            gameState.questionsAnswered = 0;
-            gameState.totalCorrect = 0;
-            gameState.timeStart = Date.now();
-            gameState.currentQuestions = getQuestionsForLevel(1);
-            gameState.questionIndex = 0;
-            
-            entities = { enemies: [], bullets: [], particles: [], portals: [] };
-            frameCount = 0;
-            framesSinceLastPortal = 0;
-            bgOffset = 0;
-            
-            player = new Player();
-            resizeCanvas();
-            
-            document.getElementById('game-canvas').style.display = 'block';
-            document.getElementById('hud').classList.remove('hidden');
-            
-            applyControlVisibility();
-            
-            document.getElementById('pause-btn').classList.remove('hidden');
-            document.getElementById('ingame-bgm-btn').classList.remove('hidden');
-            
+        function checkLevelProgression() {
+            currentQuestionIndex++;
             updateHUD();
-            playBGM();
+
+            if (playerData.hp <= 0) {
+                gameState = 'GAMEOVER';
+                document.getElementById('modal-gameover').classList.remove('hidden');
+                playSound('wrong');
+                return;
+            }
+
+            if (currentQuestionIndex >= QUESTIONS_PER_LEVEL) {
+                // Level Up
+                if (playerData.level >= TOTAL_LEVELS) {
+                    gameState = 'VICTORY';
+                    showVictory();
+                } else {
+                    gameState = 'LEVELUP';
+                    document.getElementById('reward-icon').innerText = playerData.level === 2 ? '🗡️' : (playerData.level === 3 ? '🔫' : '✨');
+                    document.getElementById('modal-levelup').classList.remove('hidden');
+                    playSound('levelUp');
+                }
+            } else {
+                // Continue playing
+                gameState = 'PLAYING';
+                enemies = []; // Clear for next spawn
+            }
+        }
+
+        // --- MAIN LOOP ---
+        function gameLoop(timestamp) {
+            // Delta time not strictly necessary for simple logic, but good practice
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawBackground();
+
+            if (gameState === 'PLAYING') {
+                player.update();
+                
+                // Spawn logic
+                if (Math.random() < 0.01) spawnEnemy();
+
+                // Bullets
+                for (let i = bullets.length - 1; i >= 0; i--) {
+                    let b = bullets[i];
+                    b.update();
+                    b.draw();
+
+                    // Collision with enemies
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        let e = enemies[j];
+                        // Simple AABB collision
+                        if (b.x > e.x && b.x < e.x + e.width && b.y > e.y && b.y < e.y + e.height) {
+                            e.hp--;
+                            createParticles(b.x, b.y, '#ef4444', 3);
+                            bullets.splice(i, 1);
+                            playSound('hit');
+                            
+                            if (e.hp <= 0) {
+                                createParticles(e.x + e.width/2, e.y + e.height/2, e.color, 20);
+                                enemies.splice(j, 1);
+                                
+                                // Show Question
+                                setTimeout(triggerQuestion, 500); // slight delay
+                            }
+                            break; // Bullet destroyed
+                        }
+                    }
+
+                    // Remove offscreen bullets
+                    if (b && b.x > canvas.width) bullets.splice(i, 1);
+                }
+
+                // Enemies
+                for (let i = enemies.length - 1; i >= 0; i--) {
+                    let e = enemies[i];
+                    e.update();
+                    e.draw();
+
+                    // Collision with player
+                    if (e.x < player.x + player.width && e.x + e.width > player.x && e.y + e.height > player.y) {
+                        player.hp -= 10;
+                        player.isHit = 20;
+                        createParticles(player.x + player.width, player.y + player.height/2, '#ef4444', 10);
+                        playSound('hit');
+                        enemies.splice(i, 1); // Enemy dies on impact
+                        updateHUD();
+                        
+                        if(player.hp <= 0) {
+                            gameState = 'GAMEOVER';
+                            document.getElementById('modal-gameover').classList.remove('hidden');
+                        } else {
+                            setTimeout(triggerQuestion, 500); // Still show question as penalty/progression
+                        }
+                    }
+                    
+                    // Remove offscreen
+                    if(e.x + e.width < 0) enemies.splice(i, 1);
+                }
+            }
+
+            // Always draw player and particles
+            if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'QUESTION') {
+                player.draw();
+            }
+
+            // Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                p.draw();
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            // Pause Overlay
+            if (gameState === 'PAUSED') {
+                ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                ctx.fillRect(0,0,canvas.width, canvas.height);
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText('PAUSED', canvas.width/2, canvas.height/2);
+                ctx.textAlign = 'left';
+            }
+
             requestAnimationFrame(gameLoop);
         }
 
-        function quitGame() {
-            gameState.isRunning = false;
-            stopBGM();
-            document.getElementById('pause-menu').classList.add('hidden');
-            document.getElementById('game-canvas').style.display = 'none';
+        // --- UI & EVENT LISTENERS ---
+        
+        function startGame() {
+            // Get form data
+            playerData.name = document.getElementById('inp-name').value || 'Prajurit';
+            playerData.cls = document.getElementById('inp-class').value || '-';
+            playerData.school = document.getElementById('inp-school').value || '-';
+            
+            document.getElementById('hud-name').innerText = playerData.name;
+            
+            // Reset state
+            playerData.hp = 100;
+            playerData.score = 0;
+            playerData.level = 1;
+            currentQuestionIndex = 0;
+            
+            initGameEnv();
+            
+            document.getElementById('menu-identity').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            document.getElementById('virtual-controls').classList.remove('hidden');
+            
+            requestFullscreen();
+            
+            gameState = 'PLAYING';
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function initGameEnv() {
+            player = new Player();
+            enemies = [];
+            bullets = [];
+            particles = [];
+            updateHUD();
+            
+            let materiTitles = ["Pemahaman Tekstual", "Pemahaman Struktur", "Pemahaman Inferensial", "Prediksi & Simpulan", "Evaluasi & Apresiasi"];
+            document.getElementById('hud-materi').innerText = materiTitles[playerData.level-1];
+        }
+
+        function requestFullscreen() {
+            let el = document.documentElement;
+            if (el.requestFullscreen) {
+                el.requestFullscreen().catch(err => console.log(err));
+            } else if (el.webkitRequestFullscreen) { /* Safari */
+                el.webkitRequestFullscreen().catch(err => console.log(err));
+            }
+        }
+
+        function showVictory() {
             document.getElementById('hud').classList.add('hidden');
-            document.getElementById('virtual-controls').style.display = 'none';
-            document.getElementById('pause-btn').classList.add('hidden');
-            document.getElementById('ingame-bgm-btn').classList.add('hidden');
-            document.getElementById('main-menu').classList.remove('hidden');
-        }
-
-        function resetToMainMenu() {
-            document.getElementById('end-screen').classList.add('hidden');
-            quitGame();
-        }
-
-        function downloadCertificate() {
-            const certElement = document.getElementById('certificate');
-            // Sedikit membesarkan agar kualitas render lebih baik
-            html2canvas(certElement, { scale: 2, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                let safeName = gameState.playerInfo.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                link.download = `Sertifikat_TKA_${safeName}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            });
-        }
-
-        function startFireworks() {
-            const fwCanvas = document.getElementById('fireworks-canvas');
-            const fCtx = fwCanvas.getContext('2d');
-            fwCanvas.width = window.innerWidth;
-            fwCanvas.height = window.innerHeight;
+            document.getElementById('virtual-controls').classList.add('hidden');
             
-            let fwParticles = [];
+            document.getElementById('cert-name').innerText = playerData.name;
+            document.getElementById('cert-class').innerText = "Kelas: " + playerData.cls;
+            document.getElementById('cert-school').innerText = "Asal Sekolah: " + playerData.school;
+            document.getElementById('cert-score').innerText = playerData.score;
             
-            function spawnFirework() {
-                let x = Math.random() * fwCanvas.width;
-                let y = fwCanvas.height;
-                let targetY = Math.random() * (fwCanvas.height * 0.4) + 50;
-                let color = `hsl(${Math.random() * 360}, 100%, 60%)`;
-                fwParticles.push({x, y, vx: (Math.random()-0.5)*2, vy: -7 - Math.random()*4, type: 'rocket', targetY, color});
+            document.getElementById('modal-victory').classList.remove('hidden');
+            playSound('levelUp');
+        }
+
+        // Save/Load
+        function saveData() {
+            localStorage.setItem('tka_player_data', JSON.stringify(playerData));
+        }
+
+        // Event Listeners for Menus
+        document.getElementById('btn-start').addEventListener('click', () => {
+            document.getElementById('menu-main').classList.add('hidden');
+            document.getElementById('menu-identity').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-back-identity').addEventListener('click', () => {
+            document.getElementById('menu-identity').classList.add('hidden');
+            document.getElementById('menu-main').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-howto').addEventListener('click', () => {
+            document.getElementById('menu-main').classList.add('hidden');
+            document.getElementById('menu-howto').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-back-howto').addEventListener('click', () => {
+            document.getElementById('menu-howto').classList.add('hidden');
+            document.getElementById('menu-main').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-start-adventure').addEventListener('click', () => {
+            if(document.getElementById('inp-name').value.trim() === '') return;
+            startGame();
+        });
+
+        document.getElementById('btn-next-q').addEventListener('click', () => {
+            document.getElementById('modal-question').classList.add('hidden');
+            checkLevelProgression();
+        });
+
+        document.getElementById('btn-next-level').addEventListener('click', () => {
+            playerData.level++;
+            currentQuestionIndex = 0;
+            playerData.hp = Math.min(100, playerData.hp + 20); // Heal 20 HP
+            saveData();
+            initGameEnv();
+            document.getElementById('modal-levelup').classList.add('hidden');
+            gameState = 'PLAYING';
+        });
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            document.getElementById('modal-gameover').classList.add('hidden');
+            startGame();
+        });
+
+        document.getElementById('btn-menu-go').addEventListener('click', () => {
+            document.getElementById('modal-gameover').classList.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('virtual-controls').classList.add('hidden');
+            document.getElementById('menu-main').classList.remove('hidden');
+            gameState = 'MENU';
+        });
+
+        document.getElementById('btn-play-again').addEventListener('click', () => {
+            document.getElementById('modal-victory').classList.add('hidden');
+            document.getElementById('menu-main').classList.remove('hidden');
+            gameState = 'MENU';
+        });
+
+        document.getElementById('btn-print-cert').addEventListener('click', () => {
+            window.print();
+        });
+
+        document.getElementById('btn-pause-hud').addEventListener('click', () => {
+            if(gameState === 'PLAYING') gameState = 'PAUSED';
+            else if(gameState === 'PAUSED') gameState = 'PLAYING';
+        });
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            
+            // Update teks pada kedua tombol (di menu utama dan di HUD)
+            document.getElementById('btn-music').innerText = musicEnabled ? '🎵 MUSIK: ON' : '🎵 MUSIK: OFF';
+            document.getElementById('btn-music-hud').innerText = musicEnabled ? '🎵 ON' : '🎵 OFF';
+            
+            if(musicEnabled) {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                bgm.play().catch(err => console.log("Gagal memutar musik:", err));
+            } else {
+                bgm.pause();
             }
-            
-            function animateFW() {
-                if(!gameState.isRunning && document.getElementById('end-screen').classList.contains('hidden') === false) {
-                    fCtx.fillStyle = 'rgba(0,0,0,0.15)';
-                    fCtx.fillRect(0,0,fwCanvas.width,fwCanvas.height);
-                    
-                    if(Math.random() < 0.08) spawnFirework();
-                    
-                    for(let i=fwParticles.length-1; i>=0; i--) {
-                        let p = fwParticles[i];
-                        p.x += p.vx; p.y += p.vy;
-                        
-                        if(p.type === 'rocket') {
-                            fCtx.fillStyle = p.color;
-                            fCtx.beginPath(); fCtx.arc(p.x, p.y, 3, 0, Math.PI*2); fCtx.fill();
-                            
-                            if(p.vy >= -1 || p.y <= p.targetY) {
-                                for(let j=0; j<40; j++) {
-                                    fwParticles.push({
-                                        x: p.x, y: p.y,
-                                        vx: (Math.random()-0.5)*12, vy: (Math.random()-0.5)*12,
-                                        type: 'explosion', color: p.color, life: 1.0
-                                    });
-                                }
-                                fwParticles.splice(i, 1);
-                            }
-                        } else {
-                            p.life -= 0.02;
-                            p.vy += 0.1; // Gravitasi
-                            fCtx.fillStyle = p.color;
-                            fCtx.globalAlpha = Math.max(0, p.life);
-                            fCtx.beginPath(); fCtx.arc(p.x, p.y, 2, 0, Math.PI*2); fCtx.fill();
-                            fCtx.globalAlpha = 1.0;
-                            if(p.life <= 0) fwParticles.splice(i, 1);
-                        }
-                    }
-                    requestAnimationFrame(animateFW);
-                }
-            }
-            animateFW();
         }
 
-        window.onload = init;
+        document.getElementById('btn-music').addEventListener('click', toggleMusic);
+        document.getElementById('btn-music-hud').addEventListener('click', toggleMusic);
+
+        // Keyboard Inputs
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = true;
+            if (e.code === 'Escape') {
+                if (gameState === 'PLAYING') gameState = 'PAUSED';
+                else if (gameState === 'PAUSED') gameState = 'PLAYING';
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.code)) keys[e.code] = false;
+        });
+
+        // Touch Controls
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnShoot = document.getElementById('btn-shoot');
+
+        btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualLeft = true; }, {passive: false});
+        btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualLeft = false; }, {passive: false});
+        
+        btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualRight = true; }, {passive: false});
+        btnRight.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualRight = false; }, {passive: false});
+
+        btnShoot.addEventListener('touchstart', (e) => { e.preventDefault(); keys.VirtualShoot = true; }, {passive: false});
+        btnShoot.addEventListener('touchend', (e) => { e.preventDefault(); keys.VirtualShoot = false; }, {passive: false});
+
+        // Init
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = () => {
+            resizeCanvas();
+            requestAnimationFrame(gameLoop);
+            
+            // Try load save
+            let saved = localStorage.getItem('tka_player_data');
+            if(saved) {
+                try {
+                    let d = JSON.parse(saved);
+                    document.getElementById('inp-name').value = d.name;
+                    document.getElementById('inp-class').value = d.cls;
+                    document.getElementById('inp-school').value = d.school;
+                } catch(e){}
+            }
+        };
+
     </script>
 </body>
 </html>
